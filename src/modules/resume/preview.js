@@ -6,189 +6,316 @@ export function updatePreview() {
     if (!container) return;
 
     const r = store.get().resume;
+    const hasPic = !!r.personal.profilePic;
 
-    // Border Handling
-    container.style.border = r.meta.border ? '1.5pt solid black' : 'none';
+    // --- 1. BUILD CONTENT BLOCKS ---
+    const blocks = [];
 
-    // Header Styles
+    // Header
+    // Dynamic Header Style
+    // If photo exists: more space to clear it.
+    // If no photo: compact.
     const headerStyle = `
-        text-align: center;
-        margin-bottom: 10pt;
-        border-bottom: 1px solid black;
-        padding-bottom: 5pt;
+        position: relative;
+        min-height: ${hasPic ? '120px' : 'auto'}; 
+        border-bottom: 2px solid #333; 
+        padding-bottom: ${hasPic ? '20pt' : '5pt'}; 
+        margin-bottom: ${hasPic ? '15pt' : '10pt'};
     `;
 
-    // Section Header Style (Grey Background)
-    const sectionStyle = `
-        background-color: #e5e7eb; 
-        font-size: 14pt; 
+    const headerHtml = `
+        <div style="${headerStyle}">
+             ${hasPic ? `
+            <div style="position: absolute; right: 0; top: 0;">
+                <img src="${r.personal.profilePic}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 4px; border: 1px solid #ddd; display: block;">
+            </div>
+            ` : ''}
+
+            <div style="width: 100%; text-align: center;">
+                <div style="font-size: 16pt; font-weight: bold; text-transform: uppercase; color: #111; line-height: 1.1;">
+                    ${(r.personal.firstName + ' ' + r.personal.lastName).toUpperCase()}
+                </div>
+                <div style="font-size: 12pt; color: #555; margin-top: 4pt; font-weight: 500; letter-spacing: 1px;">
+                    ${(r.personal.jobTitle || '').toUpperCase()}
+                </div>
+                
+                <div style="font-size: 10pt; margin-top: 6pt; line-height: 1.4; color: #444;">
+                    <div>${[r.personal.city, r.personal.country].filter(Boolean).join(', ')}</div>
+                    <div>${[r.personal.email, r.personal.phone].filter(Boolean).join(' | ')}</div>
+                    <div>${[r.personal.linkedin, r.personal.address].filter(Boolean).join(' | ')}</div>
+                    <div>${(r.socials.map(s => s.url).join(' | '))}</div>
+                </div>
+            </div>
+        </div>
+    `;
+    blocks.push(headerHtml);
+
+    // Common Styles
+    const sectionTitleStyle = `
+        background-color: #f3f4f6; 
+        font-size: 12pt; 
         font-weight: bold; 
         text-transform: uppercase; 
-        padding: 2pt 4pt;
-        margin-top: 10pt;
-        margin-bottom: 6pt;
+        padding: 4pt 8pt;
+        margin-top: 12pt;
+        margin-bottom: 8pt;
+        letter-spacing: 0.5pt;
+        border-left: 4px solid #333;
     `;
 
-    // Entry Style (Flexbox for Right Align)
     const entryHeaderStyle = `
         display: flex; 
         justify-content: space-between; 
         align-items: baseline;
-        font-size: 12pt;
+        font-size: 11pt;
         margin-top: 6pt;
+        font-weight: bold;
     `;
 
-    // HTML Generator
-    let html = `
-        <div style="${headerStyle}">
-            <div style="font-size: 16pt; font-weight: bold; text-transform: uppercase;">${(r.personal.firstName + ' ' + r.personal.lastName).toUpperCase() || 'YOUR NAME'}</div>
-            <div style="font-size: 11pt; margin-top: 2pt;">${(r.personal.jobTitle || '').toUpperCase()}</div>
-            <div style="font-size: 10pt; margin-top: 4pt;">
-                ${[r.personal.city, r.personal.country].filter(Boolean).join(', ')}
-            </div>
-            <div style="font-size: 10pt;">
-                ${[r.personal.email, r.personal.phone].filter(Boolean).join(' | ')}
-            </div>
-             <div style="font-size: 10pt;">
-                ${[r.personal.linkedin, r.personal.address].filter(Boolean).join(' | ')}
-            </div>
-             <div style="font-size: 10pt;">
-                 ${(r.socials.map(s => s.url).join(' | '))}
-            </div>
-        </div>
+    const subHeaderStyle = `
+        display: flex; 
+        justify-content: space-between; 
+        align-items: baseline;
+        font-size: 11pt;
+        font-style: italic;
+        margin-bottom: 4pt;
     `;
+
+    // Helper: Split Long Text into Smaller Chunks
+    const createTextBlocks = (text, style, itemStyle = '') => {
+        if (!text) return [];
+        const chunks = [];
+        const rawLines = text.split('\n');
+
+        rawLines.forEach(line => {
+            line = line.trim();
+            if (!line) return;
+
+            // Split formatting (bold/bullet)
+            let prefix = '';
+            if (itemStyle.includes('padding-left')) { // Bullet detection logic
+                prefix = '<span style="position: absolute; left: 0; top: 0;">•</span>';
+            }
+
+            // If line is very long (> 200 chars), try split by sentences
+            if (line.length > 200) {
+                // Split by '. ' but keep the dot
+                const sentences = line.match(/[^.!?]+[.!?]+(\s|$)/g) || [line];
+                sentences.forEach((dev, idx) => {
+                    const isLast = idx === sentences.length - 1;
+                    const sStyle = idx === 0 ? style : style.replace('margin-top', '0').replace('padding-top', '0'); // Remove top margin for continuations
+
+                    // Only the first sentence gets the bullet
+                    const content = idx === 0 ? `${prefix}<div style="text-align: justify;">${dev.trim()}</div>` : `<div style="text-align: justify;">${dev.trim()}</div>`;
+
+                    // Only the last sentence gets partial bottom margin
+                    const finalStyle = isLast ? sStyle : sStyle + 'margin-bottom: 0;';
+
+                    chunks.push(`<div style="${finalStyle}">${content}</div>`);
+                });
+            } else {
+                chunks.push(`<div style="${style}">${prefix}<div style="text-align: justify;">${line}</div></div>`);
+            }
+        });
+        return chunks;
+    };
 
     // Summary
     if (r.summary && r.summary.trim()) {
-        html += `
-            <div style="${sectionStyle}">Professional Summary</div>
-            <div class="preview-body" style="text-align: justify;">${r.summary}</div>
-        `;
+        blocks.push(`<div style="${sectionTitleStyle}">Professional Summary</div>`);
+        const subBlocks = createTextBlocks(r.summary, 'font-size: 11pt; line-height: 1.4; margin-bottom: 6pt;');
+        blocks.push(...subBlocks);
     }
 
     // Experience
     if (r.experience.length > 0) {
-        html += `<div style="${sectionStyle}">Experience</div>`;
+        blocks.push(`<div style="${sectionTitleStyle}">Experience</div>`);
         r.experience.forEach(e => {
-            html += `
-                <div>
-                    <div style="${entryHeaderStyle}">
-                        <div style="font-weight: bold;">${e.jobTitle}</div>
-                        <div style="font-weight: bold;">${e.startDate} – ${e.endDate}</div>
-                    </div>
-                    <div style="${entryHeaderStyle}; margin-top: 0;">
-                        <div style="font-style: italic;">${e.employer}</div>
-                        <div style="font-style: italic;">${e.city}</div>
-                    </div>
-                    <div class="preview-body" style="margin-top: 4pt;">${e.desc ? '• ' + e.desc.replaceAll('\n', '<br>• ') : ''}</div>
+            blocks.push(`
+                <div style="${entryHeaderStyle}">
+                    <span>${e.jobTitle}</span>
+                    <span>${e.startDate} – ${e.endDate}</span>
                 </div>
-            `;
+            `);
+            blocks.push(`
+                <div style="${subHeaderStyle}">
+                    <span>${e.employer}</span>
+                    <span>${e.city}</span>
+                </div>
+            `);
+            if (e.desc) {
+                const subBlocks = createTextBlocks(e.desc, 'padding-left: 20px; position: relative; margin-bottom: 2pt; font-size: 11pt;', 'padding-left');
+                blocks.push(...subBlocks);
+            }
+            blocks.push(`<div style="height: 8pt;"></div>`);
         });
     }
 
     // Education
     if (r.education.length > 0) {
-        html += `<div style="${sectionStyle}">Education</div>`;
+        blocks.push(`<div style="${sectionTitleStyle}">Education</div>`);
         r.education.forEach(e => {
-            html += `
-                 <div>
-                    <div style="${entryHeaderStyle}">
-                        <div style="font-weight: bold;">${e.institution}</div>
-                        <div style="font-weight: bold;">${e.startDate} – ${e.endDate}</div>
-                    </div>
-                    <div style="${entryHeaderStyle}; margin-top: 0;">
-                        <div style="font-style: italic;">${e.degree}</div>
-                        <div style="font-style: italic;">${e.city}</div>
-                    </div>
-                    <div class="preview-body" style="margin-top: 2pt;">${e.desc}</div>
+            blocks.push(`
+                <div style="${entryHeaderStyle}">
+                    <span>${e.institution}</span>
+                    <span>${e.startDate} – ${e.endDate}</span>
                 </div>
-            `;
+            `);
+            blocks.push(`
+                <div style="${subHeaderStyle}">
+                    <span>${e.degree}</span>
+                    <span>${e.city}</span>
+                </div>
+            `);
+            if (e.desc) {
+                const subBlocks = createTextBlocks(e.desc, 'padding-left: 20px; position: relative; margin-bottom: 2pt; font-size: 11pt;', 'padding-left');
+                blocks.push(...subBlocks);
+            }
+            blocks.push(`<div style="height: 8pt;"></div>`);
         });
     }
 
-    // Skills (2 Column Grid)
+    // Skills
     if (r.skills.length > 0) {
-        html += `<div style="${sectionStyle}">Skills</div>`;
-        html += `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 10px; font-size: 12pt;">`;
-        r.skills.forEach(s => {
-            html += `<div>• <span style="font-weight: bold;">${s.name}</span></div>`;
-        });
-        html += `</div>`;
+        blocks.push(`<div style="${sectionTitleStyle}">Skills</div>`);
+        const skillItems = r.skills.map(s => `
+            <div style="display:flex; align-items:center;">
+                <span style="font-weight:bold; margin-right:6px;">• ${s.name}</span>
+            </div>
+        `).join('');
+        blocks.push(`<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 6pt; font-size: 11pt;">${skillItems}</div>`);
     }
 
     // Languages
     if (r.languages.length > 0) {
-        html += `<div style="${sectionStyle}">Languages</div>`;
-        html += `<div style="display: flex; gap: 15px; flex-wrap: wrap;">`;
-        r.languages.forEach(l => {
-            const proficiencyText = l.proficiency ? `: ${l.proficiency}` : '';
-            html += `<div style="font-size: 12pt;">• <b>${l.language}</b>${proficiencyText}</div>`;
-        });
-        html += `</div>`;
+        blocks.push(`<div style="${sectionTitleStyle}">Languages</div>`);
+        const langHtml = r.languages.map(l => `<span>${l.language} (${l.proficiency})</span>`).join(' • ');
+        blocks.push(`<div style="font-size: 11pt;">${langHtml}</div>`);
     }
 
     // Projects
     if (r.projects.length > 0) {
-        html += `<div style="${sectionStyle}">Projects</div>`;
+        blocks.push(`<div style="${sectionTitleStyle}">Projects</div>`);
         r.projects.forEach(p => {
-            html += `
-                <div style="margin-bottom: 6pt;">
-                    <div style="font-weight: bold; font-size: 12pt;">${p.title}</div>
-                    <div class="preview-body">${p.desc}</div>
-                </div>
-            `;
+            blocks.push(`<div style="font-weight:bold; font-size:11pt; margin-bottom: 2pt;">${p.title}</div>`);
+            if (p.desc) {
+                const subBlocks = createTextBlocks(p.desc, 'font-size: 11pt; margin-bottom: 4pt;');
+                blocks.push(...subBlocks);
+            }
+            blocks.push(`<div style="height: 8pt;"></div>`);
         });
     }
 
     // Certifications
     if (r.certifications.length > 0) {
-        html += `<div style="${sectionStyle}">Certifications</div><ul>`;
-        r.certifications.forEach(c => {
-            html += `<li class="preview-body">${c.name}</li>`;
-        });
-        html += `</ul>`;
+        blocks.push(`<div style="${sectionTitleStyle}">Certifications</div>`);
+        const certHtml = r.certifications.map(c => `<li>${c.name}</li>`).join('');
+        blocks.push(`<ul style="font-size: 11pt; margin: 0; padding-left: 20px;">${certHtml}</ul>`);
     }
 
     // Awards
     if (r.awards.length > 0) {
-        html += `<div style="${sectionStyle}">Awards</div><ul>`;
+        blocks.push(`<div style="${sectionTitleStyle}">Awards</div>`);
         r.awards.forEach(a => {
-            html += `<li class="preview-body"><b>${a.name}</b> ${a.desc ? '- ' + a.desc : ''}</li>`;
+            blocks.push(`
+                <div style="margin-bottom: 6pt; font-size: 11pt;">
+                    <strong>${a.name}</strong> ${a.desc ? `- ${a.desc}` : ''}
+                </div>
+            `);
         });
-        html += `</ul>`;
     }
 
     // Interests
     if (r.interests) {
-        html += `<div style="${sectionStyle}">Interests</div>`;
-        html += `<div class="preview-body">${r.interests}</div>`;
+        blocks.push(`<div style="${sectionTitleStyle}">Interests</div>`);
+        blocks.push(`<div style="font-size: 11pt;">${r.interests}</div>`);
     }
 
     // References
     if (r.references.length > 0) {
-        html += `<div style="${sectionStyle}">References</div>`;
+        blocks.push(`<div style="${sectionTitleStyle}">References</div>`);
         r.references.forEach(ref => {
-            html += `<div class="preview-body">• <b>${ref.name}</b> (${ref.contact})</div>`;
+            blocks.push(`<div style="font-size: 11pt;">${ref.name} (${ref.contact})</div>`);
         });
     }
 
     // Custom
     if (r.custom.length > 0) {
         r.custom.forEach(c => {
-            html += `<div style="${sectionStyle}">${c.title}</div>`;
-            html += `<div class="preview-body">${c.content}</div>`;
+            blocks.push(`<div style="${sectionTitleStyle}">${c.title}</div>`);
+            const subBlocks = createTextBlocks(c.content, 'font-size: 11pt; margin-bottom: 4pt;');
+            blocks.push(...subBlocks);
         });
     }
 
-    container.innerHTML = html;
+    // --- 2. PAGINATE ---
+    paginateBlocks(container, blocks);
+}
 
-    container.innerHTML = html;
+// Helper: Pagination Logic
+function paginateBlocks(container, blocks) {
+    container.innerHTML = '';
 
-    container.innerHTML = html;
+    // A4 Dimensions: 210mm x 297mm
+    // Padding: 25.4mm (1 inch) all sides
+    // Content Width = 210 - 50.8 = 159.2mm
+    // Content Height = 297 - 50.8 = 246.2mm
+    // @96DPI: 1mm = 3.78px
+    // Content Height in px ~= 930px
+    // First Page Height (0.5 cushion) ~= 1026px
+    // Page 1: Top 0.5" (12.7mm), Bottom 1" (25.4mm) -> Height: 258.9mm (~978px)
+    // Page 2+: Top 1.2" (30.5mm), Bottom 1" (25.4mm) -> Height: 241.1mm (~911px)
+    const PAGE_1_HEIGHT = 960; // Maximize Content (Approaching 1 inch bottom limit)
+    const PAGE_2_HEIGHT = 960; // Maximize Content (Approaching 1 inch bottom limit)
 
-    // Subtle flash effect on update
-    container.animate([
-        { opacity: 0.8, transform: 'scale(0.998)' },
-        { opacity: 1, transform: 'scale(1)' }
-    ], { duration: 200, easing: 'ease-out' });
+    // Start with Page 1
+    let currentPageIndex = 0;
+    let currentMaxHeight = PAGE_1_HEIGHT;
+
+    let currentPage = createPage();
+    let currentContentArea = currentPage.querySelector('.page-content');
+    container.appendChild(currentPage);
+
+    let currentHeight = 0;
+
+    blocks.forEach(blockHtml => {
+        // Measure
+        // To measure accurately, we must append to the *same environment* (width, styles)
+        const tempDiv = document.createElement('div');
+        tempDiv.style.visibility = 'hidden';
+        tempDiv.style.position = 'relative'; // Keep in flow to measure margins
+        tempDiv.innerHTML = blockHtml;
+        currentContentArea.appendChild(tempDiv);
+
+        const style = window.getComputedStyle(tempDiv.firstElementChild || tempDiv);
+        const marginTop = parseFloat(style.marginTop) || 0;
+        const marginBottom = parseFloat(style.marginBottom) || 0;
+        const h = tempDiv.offsetHeight + marginTop + marginBottom;
+
+        currentContentArea.removeChild(tempDiv);
+
+        if (currentHeight + h > currentMaxHeight && currentHeight > 50) {
+            // New Page
+            currentPage = createPage();
+            currentContentArea = currentPage.querySelector('.page-content');
+            container.appendChild(currentPage);
+            currentHeight = 0;
+
+            // Switch to Page 2+ Height constraint
+            currentPageIndex++;
+            currentMaxHeight = PAGE_2_HEIGHT;
+        }
+
+        const div = document.createElement('div');
+        div.innerHTML = blockHtml;
+        currentContentArea.appendChild(div);
+        currentHeight += h;
+    });
+}
+
+function createPage() {
+    const page = document.createElement('div');
+    page.className = 'resume-page';
+    page.innerHTML = '<div class="page-content" style="height:100%;"></div>';
+    return page;
 }

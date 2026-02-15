@@ -1,5 +1,5 @@
 
-import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, TabStopType } from "docx";
+import { Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType, Table, TableRow, TableCell, WidthType, BorderStyle, TabStopType, ImageRun, SectionType, Header, Footer } from "docx";
 import { saveAs } from "file-saver";
 import { store } from '../core/store.js';
 
@@ -10,52 +10,74 @@ export async function generateDOCX() {
 
     const docSections = [];
 
-    // --- Header ---
-    docSections.push(
-        // Name
-        new Paragraph({
-            text: (r.personal.firstName + ' ' + r.personal.lastName).toUpperCase(),
-            heading: HeadingLevel.TITLE,
-            alignment: AlignmentType.CENTER,
-            style: "ResumeTitle", // 16pt Bold
-            spacing: { after: 0 }
-        }),
-        // Job Title
-        new Paragraph({
-            text: (r.personal.jobTitle || '').toUpperCase(),
-            alignment: AlignmentType.CENTER,
-            style: "JobTitle", // 12pt
-            spacing: { before: 50, after: 0 }
-        }),
-        // Location
-        new Paragraph({
-            text: [r.personal.city, r.personal.country].filter(Boolean).join(', '),
-            alignment: AlignmentType.CENTER,
-            style: "SmallInfo", // 10pt
-            spacing: { before: 50, after: 0 }
-        }),
-        // Contact Line 1
-        new Paragraph({
-            text: [r.personal.email, r.personal.phone].filter(Boolean).join(' | '),
-            alignment: AlignmentType.CENTER,
-            style: "SmallInfo",
-            spacing: { before: 50, after: 0 }
-        }),
-        // Contact Line 2 - LinkedIn | Address | Socials
-        new Paragraph({
-            text: [r.personal.linkedin, r.personal.address, ...r.socials.map(s => s.url)].filter(Boolean).join(' | '),
-            alignment: AlignmentType.CENTER,
-            style: "SmallInfo",
-            spacing: { before: 50, after: 200 },
-            border: { bottom: { color: "000000", space: 5, value: "single", size: 6 } }
-        })
-    );
+    // --- Header Generator ---
+    const createHeader = () => {
+        if (r.personal.profilePic) {
+            // Layout with Image: 3-Column Table
+            const imageBuffer = Uint8Array.from(atob(r.personal.profilePic.split(",")[1]), c => c.charCodeAt(0));
+            return new Header({
+                children: [
+                    new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        borders: { top: { style: BorderStyle.NONE }, bottom: { style: BorderStyle.NONE }, left: { style: BorderStyle.NONE }, right: { style: BorderStyle.NONE }, insideHorizontal: { style: BorderStyle.NONE }, insideVertical: { style: BorderStyle.NONE } },
+                        rows: [
+                            new TableRow({
+                                children: [
+                                    new TableCell({ width: { size: 20, type: WidthType.PERCENTAGE }, children: [new Paragraph({})] }), // Col 1: Spacer
+                                    new TableCell({
+                                        width: { size: 60, type: WidthType.PERCENTAGE },
+                                        children: [
+                                            new Paragraph({ text: (r.personal.firstName + ' ' + r.personal.lastName).toUpperCase(), style: "ResumeTitle", alignment: AlignmentType.CENTER }),
+                                            new Paragraph({ text: (r.personal.jobTitle || '').toUpperCase(), style: "JobTitle", alignment: AlignmentType.CENTER }),
+                                            new Paragraph({ text: [r.personal.city, r.personal.country].filter(Boolean).join(', '), style: "SmallInfo", alignment: AlignmentType.CENTER }),
+                                            new Paragraph({ text: [r.personal.email, r.personal.phone].filter(Boolean).join(' | '), style: "SmallInfo", alignment: AlignmentType.CENTER }),
+                                            new Paragraph({ text: [r.personal.linkedin, r.personal.address, ...r.socials.map(s => s.url)].filter(Boolean).join(' | '), style: "SmallInfo", alignment: AlignmentType.CENTER })
+                                        ]
+                                    }),
+                                    new TableCell({
+                                        width: { size: 20, type: WidthType.PERCENTAGE },
+                                        verticalAlign: "center",
+                                        children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [new ImageRun({ data: imageBuffer, transformation: { width: 100, height: 100 } })] })]
+                                    })
+                                ]
+                            })
+                        ]
+                    }),
+                    // Dedicated Paragraph for Border Bottom (with Non-Breaking Space to Force Render)
+                    new Paragraph({
+                        children: [new TextRun({ text: "\u00A0", size: 1 })], // Almost invisible space
+                        border: { bottom: { color: "000000", space: 1, style: BorderStyle.SINGLE, size: 6 } }, // 1/2 pt line
+                        spacing: { after: 200, line: 240 } // Specific line height to ensure visibility
+                    })
+                ]
+            });
+        } else {
+            // Text-Only Header
+            return new Header({
+                children: [
+                    new Paragraph({ text: (r.personal.firstName + ' ' + r.personal.lastName).toUpperCase(), heading: HeadingLevel.TITLE, alignment: AlignmentType.CENTER, style: "ResumeTitle", spacing: { after: 0 } }),
+                    new Paragraph({ text: (r.personal.jobTitle || '').toUpperCase(), alignment: AlignmentType.CENTER, style: "JobTitle", spacing: { before: 50, after: 0 } }),
+                    new Paragraph({ text: [r.personal.city, r.personal.country].filter(Boolean).join(', '), alignment: AlignmentType.CENTER, style: "SmallInfo", spacing: { before: 50, after: 0 } }),
+                    new Paragraph({ text: [r.personal.email, r.personal.phone].filter(Boolean).join(' | '), alignment: AlignmentType.CENTER, style: "SmallInfo", spacing: { before: 50, after: 0 } }),
+                    // Attach Border DIRECTLY to the last content paragraph
+                    new Paragraph({
+                        text: [r.personal.linkedin, r.personal.address, ...r.socials.map(s => s.url)].filter(Boolean).join(' | '),
+                        alignment: AlignmentType.CENTER,
+                        style: "SmallInfo",
+                        spacing: { before: 50, after: 200 },
+                        border: { bottom: { color: "000000", space: 5, style: BorderStyle.SINGLE, size: 6 } }
+                    })
+                ]
+            });
+        }
+    };
 
-    // Helper: Grey Section Header
+    // Helper: Grey Section Header with Left Border
     const createSectionHeader = (text) => new Paragraph({
         children: [new TextRun({ text: text.toUpperCase(), bold: true, font: FONTS.primary, size: 28 })],
-        shading: { fill: "E0E0E0", color: "auto", type: "clear" }, // Light Grey
-        spacing: { before: 240, after: 120 }, // 12pt before, 6pt after
+        shading: { fill: "F3F4F6", color: "auto", type: "clear" }, // Matches preview background
+        border: { left: { color: "333333", space: 10, value: "single", size: 24 } }, // 4px solid #333
+        spacing: { before: 240, after: 120 },
         alignment: AlignmentType.LEFT
     });
 
@@ -82,7 +104,8 @@ export async function generateDOCX() {
     // --- Summary ---
     if (r.summary && r.summary.trim()) {
         docSections.push(createSectionHeader("PROFESSIONAL SUMMARY"));
-        docSections.push(new Paragraph({ text: r.summary, style: "Normal" }));
+        // Use text-align: justify
+        docSections.push(new Paragraph({ text: r.summary, style: "Normal", alignment: AlignmentType.JUSTIFIED }));
     }
 
     // --- Experience ---
@@ -99,6 +122,7 @@ export async function generateDOCX() {
                     text: l,
                     bullet: { level: 0 },
                     style: "Normal",
+                    alignment: AlignmentType.JUSTIFIED, // Justify bullets
                     spacing: { after: 0 }
                 }));
             });
@@ -112,7 +136,7 @@ export async function generateDOCX() {
         r.education.forEach(e => {
             docSections.push(createEntryHeader(e.institution, `${e.startDate} – ${e.endDate}`));
             docSections.push(createEntrySubHeader(e.degree, e.city));
-            if (e.desc) docSections.push(new Paragraph({ text: e.desc, style: "Normal" }));
+            if (e.desc) docSections.push(new Paragraph({ text: e.desc, style: "Normal", alignment: AlignmentType.JUSTIFIED }));
             docSections.push(new Paragraph({ text: "", spacing: { after: 120 } }));
         });
     }
@@ -164,7 +188,7 @@ export async function generateDOCX() {
                 ],
                 spacing: { after: 0 }
             }));
-            docSections.push(new Paragraph({ text: p.desc, style: "Normal", spacing: { after: 120 } }));
+            docSections.push(new Paragraph({ text: p.desc, style: "Normal", spacing: { after: 120 }, alignment: AlignmentType.JUSTIFIED }));
         });
     }
 
@@ -195,7 +219,7 @@ export async function generateDOCX() {
     // --- Interests ---
     if (r.interests) {
         docSections.push(createSectionHeader("INTERESTS"));
-        docSections.push(new Paragraph({ text: r.interests, style: "Normal" }));
+        docSections.push(new Paragraph({ text: r.interests, style: "Normal", alignment: AlignmentType.JUSTIFIED }));
     }
 
     // --- References ---
@@ -215,7 +239,7 @@ export async function generateDOCX() {
     if (r.custom.length > 0) {
         r.custom.forEach(c => {
             docSections.push(createSectionHeader(c.title));
-            docSections.push(new Paragraph({ text: c.content, style: "Normal" }));
+            docSections.push(new Paragraph({ text: c.content, style: "Normal", alignment: AlignmentType.JUSTIFIED }));
         });
     }
 
@@ -230,21 +254,32 @@ export async function generateDOCX() {
             ]
         },
         sections: [{
+            headers: {
+                first: createHeader()
+            },
             properties: {
+                titlePage: true, // Enable first page header
                 page: {
-                    margin: { top: 720, right: 720, bottom: 720, left: 720 },
+                    margin: {
+                        top: 1728, // 1.2 inch (Page 2+ body start)
+                        right: 1440,
+                        bottom: 1440,
+                        left: 1440,
+                        header: 720 // Header starts at 0.5 inch from top
+                    },
                     borders: r.meta.border ? {
                         pageBorder: { style: BorderStyle.SINGLE, size: 12, color: "000000", display: "allPages", offsetFrom: "page" }
                     } : undefined
                 }
             },
-            children: docSections
+            children: docSections // Body only
         }]
     });
 
     try {
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const blob = await Packer.toBlob(doc);
-        saveAs(blob, `${(r.personal.firstName + '_' + r.personal.lastName).replace(/\s+/g, '_') || 'Resume'}.docx`);
+        saveAs(blob, `${(r.personal.firstName + '_' + r.personal.lastName).replace(/\\s+/g, '_') || 'Resume'}_${timestamp}.docx`);
     } catch (error) {
         console.error(error);
         alert("Error generating resume");

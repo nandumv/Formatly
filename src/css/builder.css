@@ -161,280 +161,290 @@
     font-weight: 700;
 }
 
-/* Resume Paper (A4) */
-.resume-paper {
+/* Resume Paper (A4) - Styled for Pages */
+.resume-page {
     width: 210mm;
     min-height: 297mm;
     background: white;
-    margin: 0 auto;
-    padding: 12.7mm;
+    margin: 0 auto 1.5rem auto;
+    /* Center + Bottom Margin */
+    padding: 30.5mm 25.4mm 25.4mm 25.4mm;
+    /* Top 1.2" (30.5mm), Others 1" */
     box-shadow: var(--shadow-lg);
     font-family: 'Times New Roman', serif;
     transform-origin: top center;
     transition: opacity 0.3s ease, transform 0.3s ease;
+    box-sizing: border-box;
+    page-break-after: always;
 }
 
-.resume-paper.updating {
-    opacity: 0.6;
-    transform: scale(0.995);
-}
+.resume-page:first-child {
+    padding-top: 12.7mm;
+    /* 0.5 inch Top for First Page */
+    /* Bottom remains 1 inch (25.4mm) from default */
 
-/* ATS Styles within Preview */
-.preview-name {
-    font-size: 16pt;
-    font-weight: bold;
-    text-align: center;
-}
-
-.preview-contact {
-    font-size: 12pt;
-    text-align: center;
-    margin-bottom: 8pt;
-}
-
-.preview-heading {
-    font-size: 14pt;
-    font-weight: bold;
-    border-bottom: 1px solid black;
-    margin: 6pt 0;
-    text-transform: uppercase;
-}
-
-.preview-body {
-    font-size: 12pt;
-    line-height: 1.15;
-}
-
-@keyframes slideInRight {
-    from {
-        opacity: 0;
-        transform: translateX(20px);
+    .resume-paper.updating {
+        opacity: 0.6;
+        transform: scale(0.995);
     }
 
-    to {
-        opacity: 1;
-        transform: translateX(0);
-    }
-}
-
-/* AI Features */
-.btn-ai {
-    background: linear-gradient(135deg, #6366f1, #a855f7);
-    color: white;
-    border: none;
-    font-weight: 600;
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.5rem 1rem;
-    border-radius: 0.5rem;
-    transition: all 0.3s ease;
-    box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
-    cursor: pointer;
-}
-
-.btn-ai:hover {
-    transform: translateY(-1px);
-    box-shadow: 0 6px 10px -1px rgba(99, 102, 241, 0.5);
-    background: linear-gradient(135deg, #4f46e5, #9333ea);
-}
-
-.btn-ai:disabled {
-    background: #94a3b8;
-    cursor: not-allowed;
-    transform: none;
-    box-shadow: none;
-}
-
-.ai-glow {
-    animation: glow 2s infinite;
-}
-
-@keyframes glow {
-    0% {
-        box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);
+    /* ATS Styles within Preview */
+    .preview-name {
+        font-size: 16pt;
+        font-weight: bold;
+        text-align: center;
     }
 
-    50% {
-        box-shadow: 0 0 15px rgba(168, 85, 247, 0.7);
+    .preview-contact {
+        font-size: 12pt;
+        text-align: center;
+        margin-bottom: 8pt;
     }
 
-    100% {
-        box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);
-    }
-}
-
-.loading-spinner {
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid #ffffff;
-    border-top-color: transparent;
-    border-radius: 50%;
-    animation: spin 0.8s linear infinite;
-    display: inline-block;
-}
-
-@keyframes spin {
-    to {
-        transform: rotate(360deg);
-    }
-}
-
-.suggestion-chip {
-    background: #e0e7ff;
-    color: #4338ca;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.875rem;
-    cursor: pointer;
-    border: 1px solid #c7d2fe;
-    transition: all 0.2s;
-}
-
-/* Input Focus Glows */
-input:focus,
-textarea:focus,
-select:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
-}
-
-/* ATS Ring Styles */
-.score-ring-container {
-    position: relative;
-    width: 40px;
-    height: 40px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-}
-
-.score-ring {
-    transform: rotate(-90deg);
-}
-
-.score-ring-progress {
-    transition: stroke-dashoffset 1s ease-in-out, stroke 0.3s ease;
-}
-
-.ats-score-bar #score-text {
-    position: absolute;
-    font-size: 0.75rem;
-    font-weight: 700;
-}
-
-/* Progress Bar */
-.step-progress-container {
-    padding: 0 1.5rem 1rem 1.5rem;
-    border-bottom: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-.step-progress-bar {
-    height: 4px;
-    background: #e2e8f0;
-    border-radius: 2px;
-    overflow: hidden;
-}
-
-.step-progress-fill {
-    height: 100%;
-    background: var(--grad-primary);
-    border-radius: 2px;
-    transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
-}
-
-/* Input Focus Glows */
-input:focus,
-textarea:focus,
-select:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
-    transform: translateY(-1px);
-}
-
-input,
-textarea,
-select {
-    transition: var(--trans-fast);
-}
-
-/* Enhanced Buttons */
-.btn {
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    position: relative;
-    overflow: hidden;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-}
-
-.btn:active {
-    transform: translateY(0);
-}
-
-.btn-primary.glow-effect:hover {
-    box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
-}
-
-/* --- Mobile Responsiveness --- */
-@media (max-width: 768px) {
-    .builder-layout {
-        flex-direction: column;
-        height: auto;
-        overflow-y: auto;
+    .preview-heading {
+        font-size: 14pt;
+        font-weight: bold;
+        border-bottom: 1px solid black;
+        margin: 6pt 0;
+        text-transform: uppercase;
     }
 
-    .editor-pane {
-        width: 100%;
-        min-width: 0;
-        max-width: none;
-        height: auto;
-        border-right: none;
-        border-bottom: 1px solid #e2e8f0;
+    .preview-body {
+        font-size: 12pt;
+        line-height: 1.15;
+    }
+
+    @keyframes slideInRight {
+        from {
+            opacity: 0;
+            transform: translateX(20px);
+        }
+
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+
+    /* AI Features */
+    .btn-ai {
+        background: linear-gradient(135deg, #6366f1, #a855f7);
+        color: white;
+        border: none;
+        font-weight: 600;
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 6px -1px rgba(99, 102, 241, 0.4);
+        cursor: pointer;
+    }
+
+    .btn-ai:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 6px 10px -1px rgba(99, 102, 241, 0.5);
+        background: linear-gradient(135deg, #4f46e5, #9333ea);
+    }
+
+    .btn-ai:disabled {
+        background: #94a3b8;
+        cursor: not-allowed;
+        transform: none;
         box-shadow: none;
-        flex: none;
     }
 
-    .form-container {
-        padding: 1rem;
-        height: auto;
-        /* Let it grow */
+    .ai-glow {
+        animation: glow 2s infinite;
     }
 
-    .preview-pane {
-        width: 100%;
-        height: auto;
-        padding: 1rem;
-        padding-bottom: 2rem;
-        overflow: hidden;
-        /* Hide horizontal scrollbar from translation */
-        flex: none;
-        display: block;
-        /* Remove flex centering */
+    @keyframes glow {
+        0% {
+            box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);
+        }
+
+        50% {
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.7);
+        }
+
+        100% {
+            box-shadow: 0 0 5px rgba(99, 102, 241, 0.5);
+        }
+    }
+
+    .loading-spinner {
+        width: 1rem;
+        height: 1rem;
+        border: 2px solid #ffffff;
+        border-top-color: transparent;
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        display: inline-block;
+    }
+
+    @keyframes spin {
+        to {
+            transform: rotate(360deg);
+        }
+    }
+
+    .suggestion-chip {
+        background: #e0e7ff;
+        color: #4338ca;
+        padding: 0.25rem 0.75rem;
+        border-radius: 9999px;
+        font-size: 0.875rem;
+        cursor: pointer;
+        border: 1px solid #c7d2fe;
+        transition: all 0.2s;
+    }
+
+    /* Input Focus Glows */
+    input:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.2);
+    }
+
+    /* ATS Ring Styles */
+    .score-ring-container {
         position: relative;
-        background: #e5e7eb;
-    }
-
-    .resume-paper {
-        position: relative;
-        left: 50%;
-        transform: translateX(-50%) scale(0.38);
-        /* Center and scale */
-        transform-origin: top center;
-        margin: 0;
-        margin-bottom: -160mm;
-        /* Adjust for whitespace */
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-    }
-
-    .ats-score-bar {
-        position: relative;
-        margin-bottom: 0.5rem;
-        width: 100%;
+        width: 40px;
+        height: 40px;
+        display: flex;
         justify-content: center;
+        align-items: center;
+    }
+
+    .score-ring {
+        transform: rotate(-90deg);
+    }
+
+    .score-ring-progress {
+        transition: stroke-dashoffset 1s ease-in-out, stroke 0.3s ease;
+    }
+
+    .ats-score-bar #score-text {
+        position: absolute;
+        font-size: 0.75rem;
+        font-weight: 700;
+    }
+
+    /* Progress Bar */
+    .step-progress-container {
+        padding: 0 1.5rem 1rem 1.5rem;
+        border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+    }
+
+    .step-progress-bar {
+        height: 4px;
+        background: #e2e8f0;
+        border-radius: 2px;
+        overflow: hidden;
+    }
+
+    .step-progress-fill {
+        height: 100%;
+        background: var(--grad-primary);
+        border-radius: 2px;
+        transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    /* Input Focus Glows */
+    input:focus,
+    textarea:focus,
+    select:focus {
+        outline: none;
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+        transform: translateY(-1px);
+    }
+
+    input,
+    textarea,
+    select {
+        transition: var(--trans-fast);
+    }
+
+    /* Enhanced Buttons */
+    .btn {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .btn:hover {
+        transform: translateY(-2px);
+        box-shadow: var(--shadow-md);
+    }
+
+    .btn:active {
+        transform: translateY(0);
+    }
+
+    .btn-primary.glow-effect:hover {
+        box-shadow: 0 0 20px rgba(79, 70, 229, 0.4);
+    }
+
+    /* --- Mobile Responsiveness --- */
+    @media (max-width: 768px) {
+        .builder-layout {
+            flex-direction: column;
+            height: auto;
+            overflow-y: auto;
+        }
+
+        .editor-pane {
+            width: 100%;
+            min-width: 0;
+            max-width: none;
+            height: auto;
+            border-right: none;
+            border-bottom: 1px solid #e2e8f0;
+            box-shadow: none;
+            flex: none;
+        }
+
+        .form-container {
+            padding: 1rem;
+            height: auto;
+            /* Let it grow */
+        }
+
+        .preview-pane {
+            width: 100%;
+            height: auto;
+            padding: 1rem;
+            padding-bottom: 2rem;
+            overflow: hidden;
+            /* Hide horizontal scrollbar from translation */
+            flex: none;
+            display: block;
+            /* Remove flex centering */
+            position: relative;
+            background: #e5e7eb;
+        }
+
+        .resume-paper {
+            position: relative;
+            left: 50%;
+            transform: translateX(-50%) scale(0.38);
+            /* Center and scale */
+            transform-origin: top center;
+            margin: 0;
+            margin-bottom: -160mm;
+            /* Adjust for whitespace */
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .ats-score-bar {
+            position: relative;
+            margin-bottom: 0.5rem;
+            width: 100%;
+            justify-content: center;
+        }
     }
 }

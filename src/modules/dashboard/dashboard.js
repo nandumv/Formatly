@@ -32,7 +32,7 @@ export function initDashboard(container) {
             <h1 class="hero-title animate-slide-up">Create Perfect <br><span class="gradient-text animated-gradient">Documents</span> Instantly.</h1>
             <p class="hero-subtitle animate-slide-up delay-100">Professional formatting. <span style="color:#2563eb; font-weight:600;">Download directly as .docx or .pdf</span></p>
             <div class="hero-actions animate-slide-up delay-200">
-                <button class="btn btn-primary btn-lg glow-effect scale-hover" onclick="window.open('https://in.linkedin.com/in/nandumv', '_blank')">Suggest a Feature</button>
+                <button class="btn btn-primary btn-lg glow-effect scale-hover" onclick="window.open('https://www.linktr.ee/nannddhhu', '_blank')">Suggest a Feature</button>
             </div>
         </div>
         <div class="hero-background">
@@ -63,13 +63,12 @@ export function initDashboard(container) {
                     <button class="btn btn-sm btn-disabled mt-4" disabled>Coming Soon</button>
                 </div>
 
-                <!-- Card 3: Abstract Generator (Coming Soon) -->
-                <div class="feature-card disabled-card">
-                    <div class="badge-coming-soon">Coming Soon</div>
+                <!-- Card 3: Abstract Generator -->
+                <div class="feature-card active-card" onclick="window.navigate('abstract')">
                     <div class="icon-box">📝</div>
-                    <h3>Abstract Report Generator</h3>
+                    <h3>Abstract Generator</h3>
                     <p>Generate properly formatted abstracts instantly.</p>
-                    <button class="btn btn-sm btn-disabled mt-4" disabled>Coming Soon</button>
+                    <button class="btn btn-sm btn-primary mt-4">Create Now</button>
                 </div>
 
             </div>

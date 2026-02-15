@@ -2,6 +2,7 @@
 import { store } from './store.js';
 import { initDashboard } from '../dashboard/dashboard.js';
 import { initResumeBuilder } from '../resume/ui.js';
+import { initAbstract } from '../abstract/ui.js';
 
 const app = document.getElementById('app');
 
@@ -43,6 +44,8 @@ function render() {
         initFeatures(app);
     } else if (view === 'about') {
         initAbout(app);
+    } else if (view === 'abstract') {
+        initAbstract(app);
     }
 }
 

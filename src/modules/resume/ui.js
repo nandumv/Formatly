@@ -51,6 +51,16 @@ function renderBuilderLayout() {
                             <h2>Personal Details</h2>
                             <p>Get started with the basics.</p>
                         </div>
+                        
+                        <div class="input-group">
+                            <label>Profile Picture</label>
+                            <div style="display:flex; align-items:center; gap:10px;">
+                                <input type="file" id="profile-pic-upload" accept="image/*" style="display:none;">
+                                <button class="btn btn-secondary" onclick="document.getElementById('profile-pic-upload').click()">Upload Photo</button>
+                                <button id="remove-pic-btn" class="btn btn-danger" style="display:none;">Remove</button>
+                                <span id="pic-status" style="font-size:0.8rem; color: #64748b;">No photo selected</span>
+                            </div>
+                        </div>
                         <div class="flex-row">
                             <div class="input-group w-full">
                                 <label>First Name</label>
@@ -243,14 +253,7 @@ function renderBuilderLayout() {
                             <p>Review and download.</p>
                         </div>
                         
-                        <div class="card-entry">
-                            <div class="input-group">
-                                <label style="display:flex; align-items:center; cursor:pointer;">
-                                    <input type="checkbox" id="border-toggle" style="width:auto; margin-right:0.5rem;"> 
-                                    <b>Add Page Border (1.5pt Black)</b>
-                                </label>
-                            </div>
-                        </div>
+
 
                         <div class="card-entry" style="background: #f0fdf4; border-color: #bbf7d0;">
                             <h4>✅ Checklist</h4>
@@ -320,6 +323,37 @@ function bindEvents() {
         borderToggle.addEventListener('change', (e) => {
             store.update('resume.meta.border', e.target.checked);
             updatePreview();
+        });
+    }
+
+    // Profile Pic Logic
+    const picUpload = document.getElementById('profile-pic-upload');
+    const removePicBtn = document.getElementById('remove-pic-btn');
+    const picStatus = document.getElementById('pic-status');
+
+    if (picUpload) {
+        picUpload.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = (evt) => {
+                    store.update('resume.personal.profilePic', evt.target.result);
+                    updatePreview();
+                    picStatus.textContent = 'Photo added';
+                    removePicBtn.style.display = 'block';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+
+    if (removePicBtn) {
+        removePicBtn.addEventListener('click', () => {
+            store.update('resume.personal.profilePic', null);
+            picUpload.value = '';
+            updatePreview();
+            picStatus.textContent = 'No photo selected';
+            removePicBtn.style.display = 'none';
         });
     }
 
@@ -757,21 +791,72 @@ function updateScore() {
 function generatePDF() {
     const element = document.getElementById('resume-preview');
     const r = store.get().resume;
-    const filename = `${(r.personal.firstName + '_' + r.personal.lastName).replace(/\s+/g, '_') || 'Resume'}.pdf`;
+    const resumeName = (r.personal.firstName + '_' + r.personal.lastName).replace(/\s+/g, '_') || 'Resume';
+    const timestamp = new Date().toISOString().slice(0, 10); // YYYY-MM-DD
 
     const opt = {
-        margin: 0,
-        filename: filename,
+        margin: 0, // No extra PDF margin (Rely on 960px limit for visual margin)
+        filename: `${resumeName}_${timestamp}.pdf`,
         image: { type: 'jpeg', quality: 0.98 },
-        html2canvas: { scale: 2, useCORS: true },
-        jsPDF: { unit: 'in', format: 'letter', orientation: 'portrait' }
+        html2canvas: { scale: 2, useCORS: true, logging: false },
+        jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
+        pagebreak: { mode: ['css', 'legacy'] }
     };
 
-    // Temporarily remove transform scale for better PDF quality
+    // 1. Temporarily Optimize Styling for Print
     const originalTransform = element.style.transform;
-    element.style.transform = 'none';
+    element.style.transform = 'none'; // Reset zoom
 
+    // Remove visual gaps/shadows from pages for clean export
+    const pages = element.querySelectorAll('.resume-page');
+    const originalPageStyles = [];
+    pages.forEach((page, i) => {
+        originalPageStyles.push({
+            marginBottom: page.style.marginBottom,
+            boxShadow: page.style.boxShadow,
+            margin: page.style.margin,
+            borderRadius: page.style.borderRadius
+        });
+        page.style.margin = '0'; // Remove centering/gaps
+        page.style.marginBottom = '0'; // Strict
+        page.style.minHeight = '296mm'; // Prevent >297mm (1mm safety)
+        page.style.maxHeight = '296mm'; // Prevent overflow
+        page.style.overflow = 'hidden'; // Clip content strictly
+        page.style.background = 'white';
+        page.style.boxShadow = 'none';
+        page.style.borderRadius = '0';
+
+        // Remove break from last page to avoid trailing blank page
+        if (i === pages.length - 1) {
+            page.style.pageBreakAfter = 'auto';
+        }
+    });
+
+    // 2. Generate PDF
     html2pdf().set(opt).from(element).save().then(() => {
+        // 3. Restore Styling
         element.style.transform = originalTransform;
+        pages.forEach((page, i) => {
+            if (originalPageStyles[i]) {
+                page.style.margin = originalPageStyles[i].margin;
+                page.style.marginBottom = originalPageStyles[i].marginBottom;
+                page.style.boxShadow = originalPageStyles[i].boxShadow;
+                page.style.borderRadius = originalPageStyles[i].borderRadius; // Restore if any
+            }
+        });
+    }).catch(err => {
+        console.error("PDF Fail:", err);
+        // Ensure restore happens even on error
+        element.style.transform = originalTransform;
+        pages.forEach((page, i) => {
+            if (originalPageStyles[i]) {
+                page.style.margin = originalPageStyles[i].margin;
+                page.style.marginBottom = originalPageStyles[i].marginBottom;
+                page.style.boxShadow = originalPageStyles[i].boxShadow;
+                page.style.borderRadius = originalPageStyles[i].borderRadius;
+            }
+        });
+        alert("PDF Generation Failed. Please try again.");
     });
 }
+
