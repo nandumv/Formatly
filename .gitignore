@@ -1,0 +1,7 @@
+node_modules/
+# dist/  <-- Commented out to allow pushing build artifacts for GitHub Pages
+.DS_Store
+.DS_Store
+.env
+coverage/
+.vscode/

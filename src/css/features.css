@@ -1,0 +1,137 @@
+/* Features Page Styles */
+
+.features-page {
+    padding-top: 80px;
+    min-height: 100vh;
+    background: #f8fafc;
+}
+
+.features-header {
+    text-align: center;
+    padding: 4rem 1.5rem;
+    max-width: 800px;
+    margin: 0 auto;
+}
+
+.features-header h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 700;
+    color: #0f172a;
+    line-height: 1.2;
+    margin-bottom: 1.5rem;
+}
+
+.features-header p {
+    font-size: 1.2rem;
+    color: #64748b;
+    line-height: 1.6;
+}
+
+.feat-gradient-text {
+    background: linear-gradient(90deg, #4f46e5, #9333ea);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
+
+.features-container {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 1.5rem 6rem 1.5rem;
+}
+
+.features-grid-layout {
+    display: grid;
+    /* Force 3 columns on desktop to avoiding empty space */
+    grid-template-columns: repeat(3, 1fr);
+    gap: 2rem;
+    justify-content: center;
+}
+
+@media (max-width: 1024px) {
+    .features-grid-layout {
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    }
+}
+
+.feat-card {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid #f1f5f9;
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    /* Ensure equal height */
+}
+
+.feat-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+}
+
+.feat-icon {
+    font-size: 3rem;
+    margin-bottom: 1.5rem;
+}
+
+.feat-card h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 700;
+    margin-bottom: 1rem;
+    color: #1e293b;
+}
+
+.feat-card ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    flex-grow: 1;
+}
+
+.feat-card li {
+    position: relative;
+    padding-left: 1.75rem;
+    margin-bottom: 0.75rem;
+    color: #475569;
+    font-size: 1rem;
+    line-height: 1.6;
+}
+
+.feat-card li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: #4f46e5;
+    font-weight: bold;
+}
+
+.feat-card.coming-soon {
+    background: #f8fafc;
+    border: 2px dashed #cbd5e1;
+    opacity: 0.9;
+}
+
+.feat-card.coming-soon h3,
+.feat-card.coming-soon li {
+    color: #94a3b8;
+}
+
+.feat-cta {
+    text-align: center;
+    margin-top: 5rem;
+}
+
+@media (max-width: 768px) {
+    .features-header h1 {
+        font-size: 2.5rem;
+    }
+
+    .features-grid-layout {
+        grid-template-columns: 1fr;
+    }
+}

@@ -1,0 +1,116 @@
+/* About Page Styles */
+
+.about-page {
+    padding-top: 100px;
+    padding-bottom: 6rem;
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f8fafc 0%, #eff6ff 100%);
+}
+
+.about-container {
+    max-width: 800px;
+}
+
+.about-header {
+    text-align: center;
+    margin-bottom: 4rem;
+}
+
+.about-header h1 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #0f172a;
+    letter-spacing: -0.03em;
+}
+
+.about-content {
+    display: flex;
+    flex-direction: column;
+    gap: 2rem;
+}
+
+.about-card {
+    background: white;
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    transition: transform 0.3s ease;
+    text-align: center;
+}
+
+.about-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.05);
+}
+
+.about-card p {
+    color: #475569;
+    font-size: 1.1rem;
+    line-height: 1.8;
+}
+
+.lead-text {
+    font-size: 1.25rem !important;
+    font-weight: 500;
+    color: #334155 !important;
+}
+
+.mission-box {
+    background: linear-gradient(135deg, #4f46e5, #9333ea);
+    border-radius: 1rem;
+    padding: 3rem;
+    text-align: center;
+    color: white;
+    margin: 2rem 0;
+    box-shadow: 0 20px 25px -5px rgba(79, 70, 229, 0.25);
+    position: relative;
+    overflow: hidden;
+}
+
+.mission-box::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: radial-gradient(circle at top right, rgba(255, 255, 255, 0.2), transparent);
+    pointer-events: none;
+}
+
+.mission-box h3 {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.25rem;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    opacity: 0.9;
+    margin-bottom: 1rem;
+}
+
+.mission-statement {
+    font-family: 'Outfit', sans-serif;
+    font-size: 2rem;
+    font-weight: 700;
+    line-height: 1.3;
+}
+
+.about-footer {
+    text-align: center;
+    max-width: 600px;
+    margin: 0 auto;
+}
+
+.about-footer p {
+    color: #64748b;
+    font-style: italic;
+}
+
+/* Gradients */
+.gradient-text {
+    background: linear-gradient(90deg, #4f46e5, #9333ea);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+}
