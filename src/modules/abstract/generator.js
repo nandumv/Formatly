@@ -49,7 +49,7 @@ export function generateDocx(state) {
                             })
                         ] : []),
                     ],
-                    spacing: { after: 720 },
+                    spacing: { after: 720, line: 360 },
                 }),
 
                 // ABSTRACT Heading
@@ -78,7 +78,7 @@ export function generateDocx(state) {
                             size: 24, // 12pt
                         }),
                     ],
-                    spacing: { after: 480 },
+                    spacing: { after: 480, line: 360 },
                 }),
 
                 // Keywords Section (Conditional)
@@ -96,7 +96,7 @@ export function generateDocx(state) {
                             size: 24,
                         }),
                     ],
-                    spacing: { after: 2500 } // Push signature down
+                    spacing: { after: 2500, line: 360 } // Push signature down
                 })] : [new Paragraph({ spacing: { after: 2500 } })]),
 
                 // Signatures Table (Simulated with tabs or table)
