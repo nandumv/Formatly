@@ -49,7 +49,7 @@ export function generateDocx(state) {
                             })
                         ] : []),
                     ],
-                    spacing: { after: 720, line: 360 },
+                    spacing: { after: 720, line: 360, lineRule: "auto" },
                 }),
 
                 // ABSTRACT Heading
@@ -64,7 +64,7 @@ export function generateDocx(state) {
                             size: 28, // 14pt
                         }),
                     ],
-                    spacing: { after: 240 },
+                    spacing: { after: 240, line: 360, lineRule: "auto" },
                 }),
 
                 // Abstract Content
@@ -78,7 +78,7 @@ export function generateDocx(state) {
                             size: 24, // 12pt
                         }),
                     ],
-                    spacing: { after: 480, line: 360 },
+                    spacing: { after: 480, line: 360, lineRule: "auto" },
                 }),
 
                 // Keywords Section (Conditional)
@@ -96,7 +96,7 @@ export function generateDocx(state) {
                             size: 24,
                         }),
                     ],
-                    spacing: { after: 2500, line: 360 } // Push signature down
+                    spacing: { after: 2500, line: 360, lineRule: "auto" } // Push signature down
                 })] : [new Paragraph({ spacing: { after: 2500 } })]),
 
                 // Signatures Table (Simulated with tabs or table)
@@ -126,7 +126,7 @@ export function generateDocx(state) {
                         tabStops: [
                             { position: 8000, type: "left" } // Adjust tab position
                         ],
-                        spacing: { before: 240 }
+                        spacing: { before: 240, line: 360, lineRule: "auto" }
                     }),
 
                     // Members and Guide - using a simple loop might not align perfectly if lists have different lengths
@@ -184,7 +184,8 @@ function renderSignatureSection(state) {
             ],
             tabStops: [
                 { position: 8000, type: "left" }
-            ]
+            ],
+            spacing: { line: 360, lineRule: "auto" }
         }));
     }
 
