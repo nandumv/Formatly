@@ -1,9 +1,25 @@
 
-import { Document, Packer, Paragraph, TextRun, AlignmentType, PageBorderDisplay, BorderStyle } from 'docx';
+import { Document, Packer, Paragraph, TextRun, AlignmentType, PageBorderDisplay, BorderStyle, convertInchesToTwip } from 'docx';
 import { saveAs } from 'file-saver';
+
+// 1.5 line spacing in OOXML = 360 (240 * 1.5)
+const LINE_SPACING_1_5 = 360;
 
 export function generateDocx(state) {
     const doc = new Document({
+        styles: {
+            default: {
+                document: {
+                    run: {
+                        font: "Times New Roman",
+                        size: 24, // 12pt
+                    },
+                    paragraph: {
+                        spacing: { line: LINE_SPACING_1_5, lineRule: "auto" },
+                    },
+                },
+            },
+        },
         sections: [{
             properties: {
                 page: {
