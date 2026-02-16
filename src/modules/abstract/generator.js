@@ -8,17 +8,23 @@ export function generateDocx(state) {
             properties: {
                 page: {
                     margin: {
-                        top: 1440, // 1 inch (twips)
-                        right: 1440,
-                        bottom: 1440,
-                        left: 1440,
+                        top: 1250, // Approx 0.87 inch (Ensures gap inside border)
+                        right: 1250,
+                        bottom: 1250,
+                        left: 1250,
                     },
                     borders: state.showBorder ? {
-                        pageBorderTop: { style: BorderStyle.DOUBLE, size: 24, space: 24, color: "000000" },
-                        pageBorderRight: { style: BorderStyle.DOUBLE, size: 24, space: 24, color: "000000" },
-                        pageBorderBottom: { style: BorderStyle.DOUBLE, size: 24, space: 24, color: "000000" },
-                        pageBorderLeft: { style: BorderStyle.DOUBLE, size: 24, space: 24, color: "000000" },
-                        display: PageBorderDisplay.ALL_PAGES,
+                        pageBorderTop: { style: BorderStyle.DOUBLE, size: 12, space: 12, color: "000000" },
+                        pageBorderRight: { style: BorderStyle.DOUBLE, size: 12, space: 12, color: "000000" },
+                        pageBorderBottom: { style: BorderStyle.DOUBLE, size: 12, space: 12, color: "000000" },
+                        pageBorderLeft: { style: BorderStyle.DOUBLE, size: 12, space: 12, color: "000000" },
+                        display: "allPages",
+                        offsetFrom: "page",
+                        top: 36,
+                        right: 36,
+                        bottom: 36,
+                        left: 36,
+                        zOrder: "front"
                     } : undefined,
                 },
             },
@@ -95,32 +101,38 @@ export function generateDocx(state) {
 
                 // Signatures Table (Simulated with tabs or table)
                 // Using Tabs for simplicity or a Table without borders
-                new Paragraph({
-                    children: [
-                        new TextRun({
-                            text: "GROUP MEMBERS",
-                            bold: true,
-                            font: "Times New Roman",
-                            size: 24,
-                        }),
-                        new TextRun({
-                            text: "\t\t\t\t\t\tGUIDE", // Tabbed over
-                            bold: true,
-                            font: "Times New Roman",
-                            size: 24,
-                        }),
-                    ],
-                    tabStops: [
-                        { position: 8000, type: "left" } // Adjust tab position
-                    ]
-                }),
+                // Signatures Table (Simulated with tabs or table)
+                // Using Tabs for simplicity or a Table without borders
+                ...(state.members.filter(m => m.name.trim() || m.reg.trim()).length > 0 || state.guide.name.trim() ? [
+                    new Paragraph({
+                        children: [
+                            ...(state.members.filter(m => m.name.trim() || m.reg.trim()).length > 0 ? [
+                                new TextRun({
+                                    text: "GROUP MEMBERS",
+                                    bold: true,
+                                    font: "Times New Roman",
+                                    size: 24,
+                                }),
+                            ] : []),
+                            ...(state.guide && state.guide.name.trim() ? [
+                                new TextRun({
+                                    text: "\t\t\t\t\t\tGUIDE", // Tabbed over
+                                    bold: true,
+                                    font: "Times New Roman",
+                                    size: 24,
+                                })
+                            ] : [])
+                        ],
+                        tabStops: [
+                            { position: 8000, type: "left" } // Adjust tab position
+                        ],
+                        spacing: { before: 240 }
+                    }),
 
-                // Spacing
-                new Paragraph({ spacing: { before: 240 } }),
-
-                // Members and Guide - using a simple loop might not align perfectly if lists have different lengths
-                // Better to use a table invisible borders
-                ...renderSignatureSection(state)
+                    // Members and Guide - using a simple loop might not align perfectly if lists have different lengths
+                    // Better to use a table invisible borders
+                    ...renderSignatureSection(state)
+                ] : [])
             ],
         }],
     });

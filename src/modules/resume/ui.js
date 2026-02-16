@@ -45,7 +45,6 @@ function renderBuilderLayout() {
                 </nav>
 
                 <div class="form-container">
-                    <!-- Step 1: Contacts -->
                     <div id="step-1" class="form-step-content">
                         <div class="section-header">
                             <h2>Personal Details</h2>
@@ -812,11 +811,13 @@ function generatePDF() {
     const originalPageStyles = [];
     pages.forEach((page, i) => {
         originalPageStyles.push({
+            margin: page.style.margin,
             marginBottom: page.style.marginBottom,
             boxShadow: page.style.boxShadow,
-            margin: page.style.margin,
             borderRadius: page.style.borderRadius
         });
+
+        // Optimize for Print
         page.style.margin = '0'; // Remove centering/gaps
         page.style.marginBottom = '0'; // Strict
         page.style.minHeight = '296mm'; // Prevent >297mm (1mm safety)

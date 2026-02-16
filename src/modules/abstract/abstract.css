@@ -118,44 +118,42 @@
     animation: fadeIn 0.3s ease-out;
 }
 
-/* Preview Area */
+/* The Preview Container */
 .abstract-preview-container {
     background: rgba(241, 245, 249, 0.5);
     padding: 2rem;
     display: flex;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+    /* Center pages */
     overflow-y: auto;
     border-radius: 1rem;
     animation: fadeIn 0.8s ease-out;
 }
 
-/* The Paper */
-.abstract-paper {
+/* The Paper (Page) - Mirroring Resume */
+.abstract-page {
     width: 210mm;
-    width: 210mm;
-    /* min-height handled inline now */
+    min-height: 297mm;
     background: white;
     box-shadow: 0 20px 40px -20px rgba(0, 0, 0, 0.2), 0 0 0 1px rgba(0, 0, 0, 0.02);
-    padding: 25.4mm;
-    /* 1 inch standard margin */
+    padding: 12.7mm;
+    /* 0.5 inch Margin (User Request: 0.5px -> 0.5in) */
     position: relative;
     color: black;
     font-family: 'Times New Roman', Times, serif;
     box-sizing: border-box;
-    transform-origin: top center;
-    transition: transform 0.3s;
-    display: flex;
-    flex-direction: column;
+    margin-bottom: 2rem;
     page-break-after: always;
     break-after: page;
+    display: flex;
+    flex-direction: column;
 }
 
-/* Hide break on last child */
-.abstract-paper:last-child {
-    page-break-after: auto;
-    break-after: auto;
-    margin-bottom: 0;
-}
+/* Page Spacing (Top margin for subsequent pages is handled by content spacing) */
+/* Resume uses: 30.5mm top padding for Page 2+. Abstract uses standard margin. Let's stick to standard unless overflowing. */
+
+
 
 /* Double Border Implementation */
 .border-outer {
@@ -170,7 +168,8 @@
 .border-inner {
     border: 1px solid black;
     flex: 1;
-    padding: 15mm;
+    padding: 5mm;
+    /* Reduced from 15mm to match Resume text width */
     box-sizing: border-box;
     display: flex;
     flex-direction: column;
@@ -195,12 +194,21 @@
     text-transform: uppercase;
 }
 
+/* Page 1 Content (Indented) */
 .abstract-content {
     font-size: 12pt;
     line-height: 1.5;
     text-align: justify;
     text-indent: 3rem;
+    /* Indent first line of paragraph */
     margin-bottom: auto;
+}
+
+/* Page N Content (No Indent, Top Spacing) */
+.abstract-content.continuation {
+    text-indent: 0;
+    margin-top: 1.5rem;
+    /* Space from top border */
 }
 
 .keywords-section {
@@ -253,7 +261,7 @@
         background: transparent;
     }
 
-    .abstract-paper {
+    .abstract-page {
         width: 100%;
         max-width: 210mm;
         padding: 10mm;

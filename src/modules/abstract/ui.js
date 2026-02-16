@@ -84,7 +84,7 @@ export function initAbstract(container) {
 
             <!-- Preview Area -->
             <div class="abstract-preview-container">
-                <div id="previewPaper" class="abstract-paper">
+                <div id="previewPaper" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
                     ${renderPreviewContent()}
                 </div>
             </div>
@@ -103,18 +103,26 @@ function renderPreviewContent() {
     // --- DYNAMIC LIMIT CALCULATION ---
     // A4 Page (1 inch margin) holds approx 30-40 lines of text total.
     // Each member takes up vertical space. We must reduce the text limits based on members.
-    const BASE_CHARS_PAGE_1 = 1800; // Text only
-    const CHARS_PER_MEMBER = 150; // Heuristic cost per member (name + reg + spacing)
-    const GUIDE_COST = 400; // Guide section cost similar to 2-3 members
+    const BASE_CHARS_PAGE_1 = 3000; // Increased to 3000 to fill more vertical space (0.5" margin)
 
-    // Calculate total signature cost
-    const signatureCost = (state.members.length * CHARS_PER_MEMBER) + GUIDE_COST;
+    // Check for valid members (not default empty strings)
+    const validMembers = state.members ? state.members.filter(m => m.name.trim() || m.reg.trim()) : [];
+    const validGuide = state.guide && (state.guide.name.trim() || state.guide.dept.trim() || state.guide.college.trim());
+    const hasKeywords = state.keywords ? state.keywords.trim() : '';
 
-    // Safe limit for Page 1 text
+    const KEYWORD_COST = hasKeywords ? 100 : 0;
+    const MEMBER_HEADER_COST = validMembers.length > 0 ? 100 : 0;
+    const MEMBER_ITEM_COST = 60; // 1 line per member
+    const GUIDE_COST = validGuide ? 300 : 0; // Guide header + 3 lines
+
+    // Calculate total signature cost (Only if valid)
+    const signatureCost = KEYWORD_COST + MEMBER_HEADER_COST + (validMembers.length * MEMBER_ITEM_COST) + GUIDE_COST;
+
+    // Safe limit for Page 1 text (Recover space if signature empty)
     const CHARS_PER_PAGE_1 = Math.max(500, BASE_CHARS_PAGE_1 - signatureCost);
-    const CHARS_PER_PAGE_N = 2800; // Full page text
+    const CHARS_PER_PAGE_N = 3400; // Full page text (0.5" margin)
 
-    let remainingText = state.abstract;
+    let remainingText = state.abstract || '';
     let pages = [];
     let pageNum = 1;
 
@@ -124,20 +132,22 @@ function renderPreviewContent() {
     remainingText = remainingText.substring(splitIndex);
 
     let page1Content = `
-        <div class="${borderClass}" style="min-height: 297mm; height: 297mm; overflow: hidden;">
-            <div class="${innerClass}">
-                <div class="project-title">
-                    ${state.title}
-                    ${state.domain ? `<div class="project-domain" style="font-size: 12pt; font-weight: normal; margin-top: 0.5rem; text-transform: none;">(${state.domain})</div>` : ''}
+        <div class="abstract-page">
+            <div class="${borderClass}" style="flex: 1; display: flex; flex-direction: column;">
+                <div class="${innerClass}" style="flex: 1; display: flex; flex-direction: column;">
+                    <div class="project-title">
+                        ${state.title}
+                        ${state.domain ? `<div class="project-domain" style="font-size: 12pt; font-weight: normal; margin-top: 0.5rem; text-transform: none;">(${state.domain})</div>` : ''}
+                    </div>
+                    
+                    <div class="abstract-heading">ABSTRACT</div>
+                    
+                    <div class="abstract-content">
+                        ${page1Text}
+                    </div>
+                    
+                    ${remainingText.length === 0 ? renderSignatureAndKeywords(validMembers, validGuide, hasKeywords) : ''}
                 </div>
-                
-                <div class="abstract-heading">ABSTRACT</div>
-                
-                <div class="abstract-content">
-                    ${page1Text}
-                </div>
-                
-                ${remainingText.length === 0 ? renderSignatureAndKeywords() : ''}
             </div>
         </div>
     `;
@@ -148,10 +158,6 @@ function renderPreviewContent() {
         pageNum++;
         let limit = CHARS_PER_PAGE_N;
 
-        // If this is likely the last page, check if signature fits
-        // If valid text < limit but adding signature exceeds limit, we might need another page
-        // For simplicity, just fill text.
-
         splitIndex = remainingText.length > limit ? findSplitIndex(remainingText, limit) : remainingText.length;
         let pageText = remainingText.substring(0, splitIndex).replace(/\n/g, '<br>');
         remainingText = remainingText.substring(splitIndex);
@@ -159,12 +165,14 @@ function renderPreviewContent() {
         let isLastPage = remainingText.length === 0;
 
         let pageContent = `
-            <div class="${borderClass}" style="min-height: 297mm; height: 297mm; overflow: hidden; margin-top: 2rem;">
-                <div class="${innerClass}">
-                    <div class="abstract-content" style="margin-top: 0;">
-                        ${pageText}
+            <div class="abstract-page">
+                <div class="${borderClass}" style="flex: 1; display: flex; flex-direction: column;">
+                    <div class="${innerClass}" style="flex: 1; display: flex; flex-direction: column;">
+                        <div class="abstract-content continuation">
+                            ${pageText}
+                        </div>
+                        ${isLastPage ? renderSignatureAndKeywords(validMembers, validGuide, hasKeywords) : ''}
                     </div>
-                    ${isLastPage ? renderSignatureAndKeywords() : ''}
                 </div>
             </div>
         `;
@@ -192,27 +200,37 @@ function findSplitIndex(text, limit) {
     return limit;
 }
 
-function renderSignatureAndKeywords() {
-    return `
-        ${state.keywords ? `
+function renderSignatureAndKeywords(validMembers, validGuide, hasKeywords) {
+    // Only render what exists
+    const keywordHTML = hasKeywords ? `
         <div class="keywords-section" style="margin-top: 1rem; font-size: 12pt;">
             <strong>Keywords:</strong> ${state.keywords}
-        </div>` : ''}
+        </div>` : '';
 
+    const membersHTML = validMembers && validMembers.length > 0 ? `
+        <div class="group-members">
+            <div class="section-label">GROUP MEMBERS</div>
+            <ul class="member-list">
+                ${validMembers.map(m => `<li class="member-item">${m.name} ${m.reg ? `(${m.reg})` : ''}</li>`).join('')}
+            </ul>
+        </div>` : '';
+
+    const guideHTML = validGuide ? `
+        <div class="guide-details">
+            <div class="section-label">GUIDE</div>
+            <div class="guide-name" style="font-weight:bold">${state.guide.name}</div>
+            <div class="guide-dept">${state.guide.dept}</div>
+            <div class="guide-college">${state.guide.college}</div>
+        </div>` : '';
+
+    // If no signature info, return empty slightly faster but structure matters
+    if (!keywordHTML && !membersHTML && !guideHTML) return '';
+
+    return `
+        ${keywordHTML}
         <div class="signature-section">
-            <div class="group-members">
-                <div class="section-label">GROUP MEMBERS</div>
-                <ul class="member-list">
-                    ${state.members.map(m => `<li class="member-item">${m.name} ${m.reg ? `(${m.reg})` : ''}</li>`).join('')}
-                </ul>
-            </div>
-
-            <div class="guide-details">
-                <div class="section-label">GUIDE</div>
-                <div class="guide-name" style="font-weight:bold">${state.guide.name}</div>
-                <div class="guide-dept">${state.guide.dept}</div>
-                <div class="guide-college">${state.guide.college}</div>
-            </div>
+            ${membersHTML}
+            ${guideHTML}
         </div>
     `;
 }
@@ -291,29 +309,65 @@ function attachListeners() {
     });
 
     document.getElementById('downloadPdf').addEventListener('click', () => {
-        // Only select the first page wrapper? No, we likely want all pages.
-        // But html2pdf takes one element. We need to wrap all pages in a container if they aren't already.
-        // Fortunately 'previewPaper' is the container, and we append pages to it.
-        // BUT, 'previewPaper' currently has .abstract-paper class which gives it the white BG shadow.
-        // We should change that structure. 'previewPaper' should be a transparent container, 
-        // and inner divs should be the papers.
-
         const element = document.getElementById('previewPaper');
+        if (!element) return;
+
+        const timestamp = new Date().toISOString().slice(0, 10);
+        const pages = element.querySelectorAll('.abstract-page');
+        const originalPageStyles = [];
+
+        // 1. Prepare for Export (Trim Height, Remove Gaps)
+        pages.forEach((page, i) => {
+            originalPageStyles.push({
+                marginBottom: page.style.marginBottom,
+                boxShadow: page.style.boxShadow,
+                minHeight: page.style.minHeight,
+                maxHeight: page.style.maxHeight,
+                overflow: page.style.overflow,
+                border: page.style.border
+            });
+
+            // Enforce Strict A4 Export
+            page.style.minHeight = '294mm'; // 3mm safety trim
+            page.style.maxHeight = '294mm';
+            page.style.overflow = 'hidden';
+            page.style.marginBottom = '0';
+            page.style.boxShadow = 'none';
+            page.style.border = 'none'; // Remove visual debug borders if any
+
+            // Remove break from last page
+            if (i === pages.length - 1) {
+                page.style.pageBreakAfter = 'auto';
+            }
+        });
+
         const opt = {
-            margin: [0, 0, 0, 0], // No marging as we handle it in CSS
-            filename: 'abstract.pdf',
+            margin: 0,
+            filename: `Abstract_${timestamp}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            // pagebreak: { mode: ['avoid-all', 'css', 'legacy'] } // strict page break
+            html2canvas: { scale: 2, useCORS: true, logging: false },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
         };
-        // Ensure html2pdf is available globally or imported
+
+        const restoreStyles = () => {
+            pages.forEach((page, i) => {
+                if (originalPageStyles[i]) {
+                    page.style.marginBottom = originalPageStyles[i].marginBottom;
+                    page.style.boxShadow = originalPageStyles[i].boxShadow;
+                    page.style.minHeight = originalPageStyles[i].minHeight;
+                    page.style.maxHeight = originalPageStyles[i].maxHeight;
+                    page.style.overflow = originalPageStyles[i].overflow;
+                    page.style.border = originalPageStyles[i].border;
+                    page.style.pageBreakAfter = ''; // Clear inline
+                }
+            });
+        };
+
         if (window.html2pdf) {
-            window.html2pdf().set(opt).from(element).save();
+            window.html2pdf().set(opt).from(element).save().then(restoreStyles).catch(restoreStyles);
         } else {
-            // Lazy load if needed or alert
             import('html2pdf.js').then(module => {
-                module.default().set(opt).from(element).save();
+                module.default().set(opt).from(element).save().then(restoreStyles).catch(restoreStyles);
             });
         }
     });
