@@ -2,7 +2,7 @@
 import { Document, Packer, Paragraph, TextRun, AlignmentType, PageBorderDisplay, BorderStyle, convertInchesToTwip } from 'docx';
 import { saveAs } from 'file-saver';
 
-// 1.5 line spacing in OOXML = 360 (240 * 1.5)
+// 1.5 line spacing in OOXML = 360 (240 * 1.5) — Build v2
 const LINE_SPACING_1_5 = 360;
 
 export function generateDocx(state) {
