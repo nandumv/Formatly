@@ -3,6 +3,7 @@ import { store } from './store.js';
 import { initDashboard } from '../dashboard/dashboard.js';
 import { initResumeBuilder } from '../resume/ui.js';
 import { initAbstract } from '../abstract/ui.js';
+import { initReport } from '../report/ui.js';
 
 const app = document.getElementById('app');
 
@@ -46,6 +47,8 @@ function render() {
         initAbout(app);
     } else if (view === 'abstract') {
         initAbstract(app);
+    } else if (view === 'report') {
+        initReport(app);
     }
 }
 

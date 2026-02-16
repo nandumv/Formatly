@@ -54,13 +54,12 @@ export function initDashboard(container) {
                     <button class="btn btn-sm btn-primary mt-4">Create Now</button>
                 </div>
 
-                <!-- Card 2: Project Report (Coming Soon) -->
-                <div class="feature-card disabled-card">
-                    <div class="badge-coming-soon">Coming Soon</div>
+                <!-- Card 2: Project Report Generator -->
+                <div class="feature-card active-card" onclick="window.navigate('report')">
                     <div class="icon-box">📊</div>
                     <h3>Project Report Generator</h3>
                     <p>Automatically structured academic project reports.</p>
-                    <button class="btn btn-sm btn-disabled mt-4" disabled>Coming Soon</button>
+                    <button class="btn btn-sm btn-primary mt-4">Create Now</button>
                 </div>
 
                 <!-- Card 3: Abstract Generator -->
