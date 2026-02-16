@@ -184,6 +184,8 @@
     margin-bottom: 3rem;
     line-height: 1.5;
     text-transform: uppercase;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 .abstract-heading {
@@ -202,6 +204,8 @@
     text-indent: 3rem;
     /* Indent first line of paragraph */
     margin-bottom: auto;
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
 /* Page N Content (No Indent, Top Spacing) */

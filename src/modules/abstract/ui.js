@@ -19,14 +19,48 @@ let state = {
     showBorder: true
 };
 
+function sanitizeState() {
+    // Fix: Prevent URL injection bug (browser autofill/clipboard loop)
+    const currentURL = window.location.href.toLowerCase();
+    const origin = window.location.origin.toLowerCase();
+
+    // Helper to check for unwanted strings case-insensitively
+    const invalid = (text) => {
+        if (!text) return false;
+        const s = text.toLowerCase();
+        return s.includes(currentURL) ||
+            s.includes(origin) ||
+            s.includes("localhost") ||
+            s.includes("127.0.0.1") ||
+            s.includes("http") ||
+            s.includes("startup error") ||
+            s.includes("error loading");
+    };
+
+    if (invalid(state.title)) {
+        console.warn("Sanitized state.title containing garbage/URL");
+        state.title = '';
+    }
+
+    if (invalid(state.abstract)) {
+        console.warn("Sanitized state.abstract containing garbage/URL");
+        state.abstract = '';
+    }
+}
+
 export function initAbstract(container) {
+    sanitizeState();
+
     container.innerHTML = `
         <div class="abstract-layout">
             <!-- Sidebar Form -->
             <div class="abstract-form-container">
                 <div class="d-flex justify-between align-center mb-4">
                     <h2>Details</h2>
-                    <button class="btn btn-sm" onclick="window.navigate('dashboard')">Back</button>
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-sm btn-outline" id="resetFormBtn" title="Clear all fields">Reset</button>
+                        <button class="btn btn-sm" onclick="window.routeTo('dashboard')">Back</button>
+                    </div>
                 </div>
                 
                 <div class="abstract-form-group">
@@ -154,11 +188,15 @@ function renderPreviewContent() {
     pages.push(page1Content);
 
     // --- SUBSEQUENT PAGES ---
-    while (remainingText.length > 0) {
+    let loopGuard = 0;
+    while (remainingText.length > 0 && loopGuard < 50) {
+        loopGuard++;
         pageNum++;
         let limit = CHARS_PER_PAGE_N;
 
         splitIndex = remainingText.length > limit ? findSplitIndex(remainingText, limit) : remainingText.length;
+        if (splitIndex <= 0) splitIndex = limit; // Force progress if split fails
+
         let pageText = remainingText.substring(0, splitIndex).replace(/\n/g, '<br>');
         remainingText = remainingText.substring(splitIndex);
 
@@ -369,6 +407,18 @@ function attachListeners() {
             import('html2pdf.js').then(module => {
                 module.default().set(opt).from(element).save().then(restoreStyles).catch(restoreStyles);
             });
+        }
+    });
+
+    document.getElementById('resetFormBtn').addEventListener('click', () => {
+        if (confirm('Are you sure you want to clear the form?')) {
+            state.title = '';
+            state.abstract = '';
+            state.domain = '';
+            state.keywords = '';
+            state.members = [{ name: '', reg: '' }];
+            state.guide = { name: '', dept: '', college: '' };
+            initAbstract(document.querySelector('#app')); // Re-init to update inputs
         }
     });
 

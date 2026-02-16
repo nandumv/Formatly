@@ -56,6 +56,7 @@ export function navigate(viewName) {
 
 // Expose to window for inline calls
 window.navigate = navigate;
+window.routeTo = navigate;
 
 // Handle Hash Change
 window.addEventListener('hashchange', () => {
