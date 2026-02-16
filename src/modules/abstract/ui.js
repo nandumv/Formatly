@@ -137,7 +137,7 @@ function renderPreviewContent() {
     // --- DYNAMIC LIMIT CALCULATION ---
     // A4 Page (1 inch margin) holds approx 30-40 lines of text total.
     // Each member takes up vertical space. We must reduce the text limits based on members.
-    const BASE_CHARS_PAGE_1 = 3000; // Increased to 3000 to fill more vertical space (0.5" margin)
+    const BASE_CHARS_PAGE_1 = 3450; // Increased to 3450 to fill more vertical space (0.5" margin)
 
     // Check for valid members (not default empty strings)
     const validMembers = state.members ? state.members.filter(m => m.name.trim() || m.reg.trim()) : [];
