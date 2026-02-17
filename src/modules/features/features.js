@@ -93,9 +93,9 @@ export function initFeatures(container) {
                     <div class="feat-icon">🚀</div>
                     <h3>Coming Soon</h3>
                     <ul>
-                        <li>Project Report Generator</li>
-                        <li>Abstract Generator</li>
                         <li>AI Content Writing Assistant</li>
+                        <li>Multiple Resume Templates</li>
+                        <li>Cloud Sync &amp; Collaboration</li>
                     </ul>
                 </div>
 

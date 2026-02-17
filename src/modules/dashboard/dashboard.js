@@ -8,14 +8,33 @@ export function initDashboard(container) {
     <!-- Splash Screen -->
     ${showSplash ? `
     <div class="splash-screen" id="splash">
-        <div class="splash-shapes">
-            <div class="splash-blob blob-a"></div>
-            <div class="splash-blob blob-b"></div>
-            <div class="splash-blob blob-c"></div>
+        <!-- Animated background particles -->
+        <div class="splash-particles">
+            <div class="particle p1"></div>
+            <div class="particle p2"></div>
+            <div class="particle p3"></div>
+            <div class="particle p4"></div>
+            <div class="particle p5"></div>
+            <div class="particle p6"></div>
+            <div class="particle p7"></div>
+            <div class="particle p8"></div>
         </div>
+
+        <!-- Orbital rings -->
+        <div class="splash-orbit orbit-1"></div>
+        <div class="splash-orbit orbit-2"></div>
+
+        <!-- Main content -->
         <div class="splash-content">
-            <h1 class="splash-logo animate-zoom-in">FORMATLY</h1>
-            <p class="splash-sub animate-fade-in delay-200">Automated Academic Document Formatting</p>
+            <div class="splash-logo-wrapper">
+                <div class="splash-glow"></div>
+                <h1 class="splash-logo">FORMATLY</h1>
+            </div>
+            <div class="splash-line"></div>
+            <p class="splash-sub">Automated Academic Document Formatting</p>
+            <div class="splash-loader-bar">
+                <div class="splash-loader-fill"></div>
+            </div>
         </div>
     </div>` : ''}
 
@@ -99,7 +118,7 @@ export function initDashboard(container) {
     </footer>
     `;
 
-    // Splash Screen Logic (1.8s duration) — only on first visit
+    // Splash Screen Logic (3s to let all animations complete) — only on first visit
     if (showSplash) {
         setTimeout(() => {
             const splash = document.getElementById('splash');
@@ -107,6 +126,6 @@ export function initDashboard(container) {
                 splash.classList.add('fade-out');
                 setTimeout(() => splash.remove(), 800);
             }
-        }, 1800);
+        }, 3000);
     }
 }
