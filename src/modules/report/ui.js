@@ -441,10 +441,12 @@ async function exportPdf() {
         const html2pdf = (await import('html2pdf.js')).default;
         const papers = previewEl.querySelectorAll('.report-paper');
         const tempDiv = document.createElement('div');
-        tempDiv.style.position = 'absolute';
-        tempDiv.style.left = '-9999px';
+        tempDiv.style.position = 'fixed';
         tempDiv.style.top = '0';
+        tempDiv.style.left = '0';
         tempDiv.style.width = '210mm';
+        tempDiv.style.zIndex = '-1';
+        tempDiv.style.opacity = '0.01';
 
         papers.forEach(p => {
             const clone = p.cloneNode(true);
@@ -459,20 +461,21 @@ async function exportPdf() {
             tempDiv.appendChild(clone);
         });
 
-        // Append to body so html2canvas can measure layout
         document.body.appendChild(tempDiv);
 
-        await html2pdf().set({
+        // Wait a frame for layout to calculate
+        await new Promise(r => setTimeout(r, 100));
+
+        html2pdf().set({
             margin: 0,
             filename: `${reportState.get().projectTitle || 'Project_Report'}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, width: tempDiv.scrollWidth, windowWidth: tempDiv.scrollWidth },
+            html2canvas: { scale: 2, useCORS: true },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
             pagebreak: { mode: ['css', 'legacy'] }
-        }).from(tempDiv).save();
-
-        // Cleanup
-        document.body.removeChild(tempDiv);
+        }).from(tempDiv).save().then(() => {
+            document.body.removeChild(tempDiv);
+        });
     } catch (err) {
         console.error('PDF export error:', err);
         alert('PDF export failed. Please try again.');
