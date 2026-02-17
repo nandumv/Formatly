@@ -4,13 +4,15 @@ export function initFeatures(container) {
     <!-- Navbar (Reuse or specific for sub-page) -->
     <nav class="navbar animate-fade-in">
         <div class="container nav-content">
-            <div class="logo" onclick="window.navigate('dashboard')" style="cursor:pointer">FORMATLY</div>
+            <div class="logo-group" onclick="window.navigate('dashboard')" style="cursor:pointer">
+                <div class="logo">FORMATLY</div>
+                <div class="logo-tagline">Automated Academic Document Formatting</div>
+            </div>
             <div class="nav-links">
                 <a href="#" onclick="window.navigate('dashboard')">Home</a>
                 <a href="#" class="active">Features</a>
                 <a href="#" onclick="window.navigate('about')">About</a>
             </div>
-            <!-- Contact removed -->
         </div>
     </nav>
 

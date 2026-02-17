@@ -15,30 +15,32 @@ export function initDashboard(container) {
         </div>
         <div class="splash-content">
             <h1 class="splash-logo animate-zoom-in">FORMATLY</h1>
-            <p class="splash-sub animate-fade-in delay-200">Professional Documents. Zero Complexity.</p>
+            <p class="splash-sub animate-fade-in delay-200">Automated Academic Document Formatting</p>
         </div>
     </div>` : ''}
 
     <!-- Navbar -->
     <nav class="navbar animate-fade-in delay-200">
         <div class="container nav-content">
-            <div class="logo">FORMATLY</div>
+            <div class="logo-group" onclick="window.navigate('dashboard')" style="cursor:pointer">
+                <div class="logo">FORMATLY</div>
+                <div class="logo-tagline">Automated Academic Document Formatting</div>
+            </div>
             <div class="nav-links">
                 <a href="#" class="active" onclick="window.navigate('dashboard')">Home</a>
                 <a href="#" onclick="window.navigate('features')">Features</a>
                 <a href="#" onclick="window.navigate('about')">About</a>
             </div>
-            <!-- Contact removed as requested -->
         </div>
     </nav>
 
     <!-- Hero Section -->
     <header class="hero">
         <div class="container hero-content">
-            <h1 class="hero-title animate-slide-up">Create Perfect <br><span class="gradient-text animated-gradient">Documents</span> Instantly.</h1>
-            <p class="hero-subtitle animate-slide-up delay-100">Professional formatting. <span style="color:#2563eb; font-weight:600;">Download directly as .docx or .pdf</span></p>
+            <h1 class="hero-title animate-slide-up">Create University-Ready <br><span class="gradient-text animated-gradient">Documents</span> Instantly.</h1>
+            <p class="hero-subtitle animate-slide-up delay-100">Automated Academic Document Formatting.<br><span style="font-weight:500;">Structured for Real University Standards.</span></p>
             <div class="hero-actions animate-slide-up delay-200">
-                <button class="btn btn-primary btn-lg glow-effect scale-hover" onclick="window.open('https://www.linktr.ee/nannddhhu', '_blank')">Suggest a Feature</button>
+                <button class="btn btn-primary btn-lg glow-effect scale-hover" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Start Building</button>
             </div>
         </div>
         <div class="hero-background">
@@ -82,8 +84,15 @@ export function initDashboard(container) {
 
     <!-- Footer -->
     <footer class="footer">
-        <div class="container">
-            <p>&copy; 2026 Formatly.</p>
+        <div class="container footer-content">
+            <div class="footer-brand">
+                <div class="footer-logo">FORMATLY</div>
+                <div class="footer-tagline">Automated Academic Document Formatting</div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Formatly. All Rights Reserved.</p>
+                <p class="footer-note">Built for Academic Excellence.</p>
+            </div>
         </div>
     </footer>
     `;

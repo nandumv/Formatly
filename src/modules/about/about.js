@@ -4,7 +4,10 @@ export function initAbout(container) {
     <!-- Navbar -->
     <nav class="navbar animate-fade-in">
         <div class="container nav-content">
-            <div class="logo" onclick="window.navigate('dashboard')" style="cursor:pointer">FORMATLY</div>
+            <div class="logo-group" onclick="window.navigate('dashboard')" style="cursor:pointer">
+                <div class="logo">FORMATLY</div>
+                <div class="logo-tagline">Automated Academic Document Formatting</div>
+            </div>
             <div class="nav-links">
                 <a href="#" onclick="window.navigate('dashboard')">Home</a>
                 <a href="#" onclick="window.navigate('features')">Features</a>
