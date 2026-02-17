@@ -348,67 +348,69 @@ function attachListeners() {
         updatePreview();
     });
 
-    document.getElementById('downloadPdf').addEventListener('click', () => {
+    document.getElementById('downloadPdf').addEventListener('click', async () => {
         const element = document.getElementById('previewPaper');
         if (!element) return;
 
-        const timestamp = new Date().toISOString().slice(0, 10);
-        const pages = element.querySelectorAll('.abstract-page');
-        const originalPageStyles = [];
+        try {
+            const html2pdf = (await import('html2pdf.js')).default;
+            const timestamp = new Date().toISOString().slice(0, 10);
+            const pages = element.querySelectorAll('.abstract-page');
+            const originalPageStyles = [];
 
-        // 1. Prepare for Export (Trim Height, Remove Gaps)
-        pages.forEach((page, i) => {
-            originalPageStyles.push({
-                marginBottom: page.style.marginBottom,
-                boxShadow: page.style.boxShadow,
-                minHeight: page.style.minHeight,
-                maxHeight: page.style.maxHeight,
-                overflow: page.style.overflow,
-                border: page.style.border
+            // 1. Prepare for Export
+            pages.forEach((page) => {
+                originalPageStyles.push({
+                    transform: page.style.transform,
+                    boxShadow: page.style.boxShadow,
+                    border: page.style.border,
+                    margin: page.style.margin,
+                    width: page.style.width
+                });
+
+                // Scale to fit A4 (similar to Report module)
+                // 210mm at 96dpi is ~794px. If we capture at this width, it should fit.
+                page.style.transform = 'none'; // Reset any preview scaling
+                page.style.width = '210mm';
+                page.style.boxShadow = 'none';
+                page.style.border = 'none';
+                page.style.margin = '0 auto';
             });
 
-            // Enforce Strict A4 Export
-            page.style.minHeight = '294mm'; // 3mm safety trim
-            page.style.maxHeight = '294mm';
-            page.style.overflow = 'hidden';
-            page.style.marginBottom = '0';
-            page.style.boxShadow = 'none';
-            page.style.border = 'none'; // Remove visual debug borders if any
+            // Create a temp wrapper to ensure no external styles interfere
+            const wrapper = document.createElement('div');
+            wrapper.style.width = '210mm';
+            element.appendChild(wrapper);
 
-            // Remove break from last page
-            if (i === pages.length - 1) {
-                page.style.pageBreakAfter = 'auto';
-            }
-        });
+            // Move pages to wrapper
+            pages.forEach(p => wrapper.appendChild(p));
 
-        const opt = {
-            margin: 0,
-            filename: `Abstract_${timestamp}.pdf`,
-            image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, logging: false },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-        };
+            const opt = {
+                margin: 0,
+                filename: `Abstract_${timestamp}.pdf`,
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true, windowWidth: 794 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
 
-        const restoreStyles = () => {
+            await html2pdf().set(opt).from(wrapper).save();
+
+            // 2. Restore Styles & DOM
             pages.forEach((page, i) => {
+                element.appendChild(page); // Move back
                 if (originalPageStyles[i]) {
-                    page.style.marginBottom = originalPageStyles[i].marginBottom;
+                    page.style.transform = originalPageStyles[i].transform;
                     page.style.boxShadow = originalPageStyles[i].boxShadow;
-                    page.style.minHeight = originalPageStyles[i].minHeight;
-                    page.style.maxHeight = originalPageStyles[i].maxHeight;
-                    page.style.overflow = originalPageStyles[i].overflow;
                     page.style.border = originalPageStyles[i].border;
-                    page.style.pageBreakAfter = ''; // Clear inline
+                    page.style.margin = originalPageStyles[i].margin;
+                    page.style.width = originalPageStyles[i].width;
                 }
             });
-        };
+            wrapper.remove();
 
-        if (window.html2pdf) {
-            window.html2pdf().set(opt).from(element).save().then(restoreStyles).catch(restoreStyles);
-        } else {
-            import('html2pdf.js').then(module => {
-                module.default().set(opt).from(element).save().then(restoreStyles).catch(restoreStyles);
-            });
+        } catch (err) {
+            console.error("PDF Export Failed:", err);
+            alert("Failed to generate PDF. Please try again.");
         }
     });
 

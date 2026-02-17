@@ -20,34 +20,7 @@ export function generateDocx(state) {
             spacing: { line: 360, lineRule: "auto" }
         }));
 
-    // Prepare Guide Details
-    const guideParagraphs = [];
-    if (state.guide && state.guide.name.trim()) {
-        guideParagraphs.push(
-            new Paragraph({
-                children: [new TextRun({ text: state.guide.name, font: "Times New Roman", size: 24, bold: true })],
-                spacing: { line: 360, lineRule: "auto" }
-            })
-        );
-        if (state.guide.designation) {
-            guideParagraphs.push(new Paragraph({
-                children: [new TextRun({ text: state.guide.designation, font: "Times New Roman", size: 24 })],
-                spacing: { line: 360, lineRule: "auto" }
-            }));
-        }
-        if (state.guide.dept) {
-            guideParagraphs.push(new Paragraph({
-                children: [new TextRun({ text: state.guide.dept, font: "Times New Roman", size: 24 })],
-                spacing: { line: 360, lineRule: "auto" }
-            }));
-        }
-        if (state.guide.college) {
-            guideParagraphs.push(new Paragraph({
-                children: [new TextRun({ text: state.guide.college, font: "Times New Roman", size: 24 })],
-                spacing: { line: 360, lineRule: "auto" }
-            }));
-        }
-    }
+
 
     const doc = new Document({
         styles: {
@@ -159,7 +132,7 @@ export function generateDocx(state) {
                 })] : [new Paragraph({ spacing: { after: 1440 } })]),
 
                 // Signatures Table (Using a table for correct alignment)
-                ...(memberParagraphs.length > 0 || guideParagraphs.length > 0 ? [
+                ...(memberParagraphs.length > 0 || (state.guide && state.guide.name.trim()) ? [
                     new Table({
                         width: { size: 100, type: WidthType.PERCENTAGE },
                         borders: {
@@ -188,18 +161,36 @@ export function generateDocx(state) {
                                     new TableCell({
                                         width: { size: 50, type: WidthType.PERCENTAGE },
                                         children: [
-                                            ...(guideParagraphs.length > 0 ? [
+                                            ...(state.guide && state.guide.name.trim() ? [
                                                 new Paragraph({
                                                     alignment: AlignmentType.RIGHT,
                                                     children: [new TextRun({ text: "GUIDE", bold: true, font: "Times New Roman", size: 24 })],
                                                     spacing: { after: 240 }
                                                 }),
-                                                // Align guide details to right as well
-                                                ...guideParagraphs.map(p => new Paragraph({
+                                                // Guide Name
+                                                new Paragraph({
                                                     alignment: AlignmentType.RIGHT,
-                                                    children: p.options.children,
+                                                    children: [new TextRun({ text: state.guide.name, font: "Times New Roman", size: 24, bold: true })],
                                                     spacing: { line: 360, lineRule: "auto" }
-                                                }))
+                                                }),
+                                                // Guide Designation
+                                                ...(state.guide.designation ? [new Paragraph({
+                                                    alignment: AlignmentType.RIGHT,
+                                                    children: [new TextRun({ text: state.guide.designation, font: "Times New Roman", size: 24 })],
+                                                    spacing: { line: 360, lineRule: "auto" }
+                                                })] : []),
+                                                // Guide Dept
+                                                ...(state.guide.dept ? [new Paragraph({
+                                                    alignment: AlignmentType.RIGHT,
+                                                    children: [new TextRun({ text: state.guide.dept, font: "Times New Roman", size: 24 })],
+                                                    spacing: { line: 360, lineRule: "auto" }
+                                                })] : []),
+                                                // Guide College
+                                                ...(state.guide.college ? [new Paragraph({
+                                                    alignment: AlignmentType.RIGHT,
+                                                    children: [new TextRun({ text: state.guide.college, font: "Times New Roman", size: 24 })],
+                                                    spacing: { line: 360, lineRule: "auto" }
+                                                })] : [])
                                             ] : [])
                                         ],
                                     }),
