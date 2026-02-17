@@ -31,6 +31,8 @@ export function initRouter() {
 
 import { initFeatures } from '../features/features.js';
 import { initAbout } from '../about/about.js';
+import { initContact } from '../contact/contact.js';
+import '../contact/contact.css';
 
 function render() {
     const view = store.get().view;
@@ -49,6 +51,8 @@ function render() {
         initAbstract(app);
     } else if (view === 'report') {
         initReport(app);
+    } else if (view === 'contact') {
+        initContact(app);
     }
 }
 

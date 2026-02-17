@@ -30,6 +30,7 @@ export function initDashboard(container) {
                 <a href="#" class="active" onclick="window.navigate('dashboard')">Home</a>
                 <a href="#" onclick="window.navigate('features')">Features</a>
                 <a href="#" onclick="window.navigate('about')">About</a>
+                <a href="#" onclick="window.navigate('contact')">Contact</a>
             </div>
         </div>
     </nav>

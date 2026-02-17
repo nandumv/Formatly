@@ -12,6 +12,7 @@ export function initFeatures(container) {
                 <a href="#" onclick="window.navigate('dashboard')">Home</a>
                 <a href="#" class="active">Features</a>
                 <a href="#" onclick="window.navigate('about')">About</a>
+                <a href="#" onclick="window.navigate('contact')">Contact</a>
             </div>
         </div>
     </nav>

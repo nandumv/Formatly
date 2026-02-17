@@ -12,6 +12,7 @@ export function initAbout(container) {
                 <a href="#" onclick="window.navigate('dashboard')">Home</a>
                 <a href="#" onclick="window.navigate('features')">Features</a>
                 <a href="#" class="active">About</a>
+                <a href="#" onclick="window.navigate('contact')">Contact</a>
             </div>
         </div>
     </nav>
