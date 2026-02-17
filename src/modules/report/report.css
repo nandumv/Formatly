@@ -728,6 +728,21 @@
 .report-paper+.report-paper {
     margin-top: -80px;
     /* Overlap slightly due to scale, but keep visible separation */
+    page-break-before: always;
+    break-before: page;
+}
+
+/* Chapter headings should not be split */
+.chapter-heading {
+    page-break-before: always;
+    break-before: page;
+    page-break-after: avoid;
+    break-after: avoid;
+}
+
+.chapter-subheading {
+    page-break-after: avoid;
+    break-after: avoid;
 }
 
 /* Page Break Indicator */

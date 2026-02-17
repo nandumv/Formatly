@@ -440,27 +440,45 @@ async function exportPdf() {
 
         const html2pdf = (await import('html2pdf.js')).default;
         const papers = previewEl.querySelectorAll('.report-paper');
-        const tempDiv = document.createElement('div');
-        tempDiv.style.width = '210mm';
 
+        // Create a temp wrapper inside the preview (in the DOM for proper layout)
+        const wrapper = document.createElement('div');
+        wrapper.style.background = '#fff';
+        previewEl.appendChild(wrapper);
+
+        // Move papers into wrapper and reset styles for capture
+        const origStyles = [];
         papers.forEach(p => {
-            const clone = p.cloneNode(true);
-            clone.style.transform = 'none';
-            clone.style.margin = '0';
-            clone.style.boxShadow = 'none';
-            clone.style.width = '210mm';
-            clone.style.overflow = 'visible';
-            tempDiv.appendChild(clone);
+            origStyles.push({
+                transform: p.style.transform,
+                marginBottom: p.style.marginBottom,
+                boxShadow: p.style.boxShadow
+            });
+            p.style.transform = 'none';
+            p.style.margin = '0';
+            p.style.boxShadow = 'none';
+            wrapper.appendChild(p);
         });
 
-        html2pdf().set({
+        await new Promise(r => setTimeout(r, 50));
+
+        await html2pdf().set({
             margin: 0,
             filename: `${reportState.get().projectTitle || 'Project_Report'}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true, windowWidth: 794 },
+            html2canvas: { scale: 2, useCORS: true },
             jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'] }
-        }).from(tempDiv).save();
+            pagebreak: { mode: ['css', 'legacy'], avoid: ['.chapter-heading', '.chapter-subheading', '.figure-container'] }
+        }).from(wrapper).save();
+
+        // Restore: move papers back and reset styles
+        papers.forEach((p, i) => {
+            p.style.transform = origStyles[i].transform;
+            p.style.marginBottom = origStyles[i].marginBottom;
+            p.style.boxShadow = origStyles[i].boxShadow;
+            previewEl.appendChild(p);
+        });
+        wrapper.remove();
     } catch (err) {
         console.error('PDF export error:', err);
         alert('PDF export failed. Please try again.');
