@@ -58,7 +58,7 @@ export function initDashboard(container) {
     <header class="hero">
         <div class="container hero-content">
             <h1 class="hero-title animate-slide-up">Create University-Ready <br><span class="gradient-text animated-gradient">Documents</span> Instantly.</h1>
-            <p class="hero-subtitle animate-slide-up delay-100">Automated Academic Document Formatting.<br><span style="font-weight:500;">Structured for Real University Standards.</span></p>
+            <p class="hero-subtitle animate-slide-up delay-100">Automated Academic Document Formatting.<br>Download directly as <span style="color:#4f46e5; font-weight:600;">.DOCX</span> and <span style="color:#7c3aed; font-weight:600;">.PDF</span> formats.</p>
             <div class="hero-actions animate-slide-up delay-200">
                 <button class="btn btn-primary btn-lg glow-effect scale-hover" onclick="document.getElementById('features').scrollIntoView({behavior:'smooth'})">Start Building</button>
             </div>
