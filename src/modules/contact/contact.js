@@ -66,10 +66,10 @@ export function initContact(container) {
                 <!-- Contact Info -->
                 <div class="contact-info-card animate-slide-up delay-300">
                     <div class="contact-info-item">
-                        <div class="contact-info-icon">📧</div>
+                        <div class="contact-info-icon">🌐</div>
                         <div>
-                            <h4>Email</h4>
-                            <p>formatly.app@gmail.com</p>
+                            <h4>Platform</h4>
+                            <p>Free &amp; open-source web tool. No sign-up required.</p>
                         </div>
                     </div>
 
@@ -119,6 +119,7 @@ export function initContact(container) {
             <div class="footer-bottom">
                 <p>&copy; 2026 Formatly. All Rights Reserved.</p>
                 <p class="footer-note">Built for Academic Excellence.</p>
+                <p style="margin-top:0.5rem;"><a href="#" onclick="window.navigate('privacy')" style="color:var(--primary); text-decoration:none; font-size:0.8rem;">Privacy Policy</a></p>
             </div>
         </div>
     </footer>

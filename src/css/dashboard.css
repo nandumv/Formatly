@@ -638,19 +638,33 @@
 }
 
 @media (max-width: 768px) {
+    .nav-content {
+        flex-direction: column;
+        gap: 0.4rem;
+    }
+
+    .logo-tagline {
+        display: none;
+    }
+
+    .nav-links {
+        gap: 1.2rem;
+    }
+
+    .nav-links a {
+        font-size: 0.85rem;
+    }
+
     .splash-logo {
         font-size: 3rem;
-        /* Reduce from 5rem */
     }
 
     .hero-title {
         font-size: 2.5rem;
-        /* Reduce from 4rem */
     }
 
     .hero-background .blob {
         opacity: 0.3;
-        /* Reduce blob opacity to prevent distraction */
     }
 
     .hero-subtitle {

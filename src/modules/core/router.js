@@ -33,6 +33,8 @@ import { initFeatures } from '../features/features.js';
 import { initAbout } from '../about/about.js';
 import { initContact } from '../contact/contact.js';
 import '../contact/contact.css';
+import { initPrivacy } from '../privacy/privacy.js';
+import '../privacy/privacy.css';
 
 function render() {
     const view = store.get().view;
@@ -53,6 +55,8 @@ function render() {
         initReport(app);
     } else if (view === 'contact') {
         initContact(app);
+    } else if (view === 'privacy') {
+        initPrivacy(app);
     }
 }
 

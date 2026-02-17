@@ -93,6 +93,7 @@ export function initDashboard(container) {
             <div class="footer-bottom">
                 <p>&copy; 2026 Formatly. All Rights Reserved.</p>
                 <p class="footer-note">Built for Academic Excellence.</p>
+                <p style="margin-top:0.5rem;"><a href="#" onclick="window.navigate('privacy')" style="color:var(--primary); text-decoration:none; font-size:0.8rem;">Privacy Policy</a></p>
             </div>
         </div>
     </footer>
