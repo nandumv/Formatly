@@ -1,11 +1,54 @@
 
-import { Document, Packer, Paragraph, TextRun, AlignmentType, PageBorderDisplay, BorderStyle, convertInchesToTwip } from 'docx';
+import { Document, Packer, Paragraph, TextRun, AlignmentType, PageBorderDisplay, BorderStyle, convertInchesToTwip, Table, TableRow, TableCell, WidthType } from 'docx';
 import { saveAs } from 'file-saver';
 
 // 1.5 line spacing in OOXML = 360 (240 * 1.5) — Build v2
 const LINE_SPACING_1_5 = 360;
 
 export function generateDocx(state) {
+    // Prepare Member List
+    const memberParagraphs = state.members
+        .filter(m => m.name.trim() || m.reg.trim())
+        .map(m => new Paragraph({
+            children: [
+                new TextRun({
+                    text: m.reg ? `${m.name} (${m.reg})` : m.name,
+                    font: "Times New Roman",
+                    size: 24,
+                })
+            ],
+            spacing: { line: 360, lineRule: "auto" }
+        }));
+
+    // Prepare Guide Details
+    const guideParagraphs = [];
+    if (state.guide && state.guide.name.trim()) {
+        guideParagraphs.push(
+            new Paragraph({
+                children: [new TextRun({ text: state.guide.name, font: "Times New Roman", size: 24, bold: true })],
+                spacing: { line: 360, lineRule: "auto" }
+            })
+        );
+        if (state.guide.designation) {
+            guideParagraphs.push(new Paragraph({
+                children: [new TextRun({ text: state.guide.designation, font: "Times New Roman", size: 24 })],
+                spacing: { line: 360, lineRule: "auto" }
+            }));
+        }
+        if (state.guide.dept) {
+            guideParagraphs.push(new Paragraph({
+                children: [new TextRun({ text: state.guide.dept, font: "Times New Roman", size: 24 })],
+                spacing: { line: 360, lineRule: "auto" }
+            }));
+        }
+        if (state.guide.college) {
+            guideParagraphs.push(new Paragraph({
+                children: [new TextRun({ text: state.guide.college, font: "Times New Roman", size: 24 })],
+                spacing: { line: 360, lineRule: "auto" }
+            }));
+        }
+    }
+
     const doc = new Document({
         styles: {
             default: {
@@ -112,42 +155,58 @@ export function generateDocx(state) {
                             size: 24,
                         }),
                     ],
-                    spacing: { after: 2500, line: 360, lineRule: "auto" } // Push signature down
-                })] : [new Paragraph({ spacing: { after: 2500 } })]),
+                    spacing: { after: 1440, line: 360, lineRule: "auto" } // 1 inch approx margin before signatures
+                })] : [new Paragraph({ spacing: { after: 1440 } })]),
 
-                // Signatures Table (Simulated with tabs or table)
-                // Using Tabs for simplicity or a Table without borders
-                // Signatures Table (Simulated with tabs or table)
-                // Using Tabs for simplicity or a Table without borders
-                ...(state.members.filter(m => m.name.trim() || m.reg.trim()).length > 0 || state.guide.name.trim() ? [
-                    new Paragraph({
-                        children: [
-                            ...(state.members.filter(m => m.name.trim() || m.reg.trim()).length > 0 ? [
-                                new TextRun({
-                                    text: "GROUP MEMBERS",
-                                    bold: true,
-                                    font: "Times New Roman",
-                                    size: 24,
-                                }),
-                            ] : []),
-                            ...(state.guide && state.guide.name.trim() ? [
-                                new TextRun({
-                                    text: "\t\t\t\t\t\tGUIDE", // Tabbed over
-                                    bold: true,
-                                    font: "Times New Roman",
-                                    size: 24,
-                                })
-                            ] : [])
+                // Signatures Table (Using a table for correct alignment)
+                ...(memberParagraphs.length > 0 || guideParagraphs.length > 0 ? [
+                    new Table({
+                        width: { size: 100, type: WidthType.PERCENTAGE },
+                        borders: {
+                            top: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                            bottom: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                            left: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                            right: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                            insideVertical: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                            insideHorizontal: { style: BorderStyle.NONE, size: 0, color: "FFFFFF" },
+                        },
+                        rows: [
+                            new TableRow({
+                                children: [
+                                    new TableCell({
+                                        width: { size: 50, type: WidthType.PERCENTAGE },
+                                        children: [
+                                            ...(memberParagraphs.length > 0 ? [
+                                                new Paragraph({
+                                                    children: [new TextRun({ text: "GROUP MEMBERS", bold: true, font: "Times New Roman", size: 24 })],
+                                                    spacing: { after: 240 }
+                                                }),
+                                                ...memberParagraphs
+                                            ] : [])
+                                        ],
+                                    }),
+                                    new TableCell({
+                                        width: { size: 50, type: WidthType.PERCENTAGE },
+                                        children: [
+                                            ...(guideParagraphs.length > 0 ? [
+                                                new Paragraph({
+                                                    alignment: AlignmentType.RIGHT,
+                                                    children: [new TextRun({ text: "GUIDE", bold: true, font: "Times New Roman", size: 24 })],
+                                                    spacing: { after: 240 }
+                                                }),
+                                                // Align guide details to right as well
+                                                ...guideParagraphs.map(p => new Paragraph({
+                                                    alignment: AlignmentType.RIGHT,
+                                                    children: p.options.children,
+                                                    spacing: { line: 360, lineRule: "auto" }
+                                                }))
+                                            ] : [])
+                                        ],
+                                    }),
+                                ],
+                            }),
                         ],
-                        tabStops: [
-                            { position: 8000, type: "left" } // Adjust tab position
-                        ],
-                        spacing: { before: 240, line: 360, lineRule: "auto" }
-                    }),
-
-                    // Members and Guide - using a simple loop might not align perfectly if lists have different lengths
-                    // Better to use a table invisible borders
-                    ...renderSignatureSection(state)
+                    })
                 ] : [])
             ],
         }],
@@ -156,54 +215,4 @@ export function generateDocx(state) {
     Packer.toBlob(doc).then((blob) => {
         saveAs(blob, "abstract.docx");
     });
-}
-
-function renderSignatureSection(state) {
-    const paragraphs = [];
-
-    // We'll iterate the max length of members vs guide (1)
-    for (let i = 0; i < state.members.length; i++) {
-        const member = state.members[i];
-        const isFirst = i === 0;
-        const guideText = isFirst ? state.guide.name : "";
-
-        const memberText = member.reg ? `${member.name} (${member.reg})` : member.name;
-
-        paragraphs.push(new Paragraph({
-            children: [
-                new TextRun({
-                    text: memberText,
-                    font: "Times New Roman",
-                    size: 24,
-                }),
-                new TextRun({
-                    text: `\t\t\t\t\t\t${guideText}`,
-                    font: "Times New Roman",
-                    size: 24,
-                    bold: isFirst // Bold name
-                }),
-                // Add Dept/College on subsequent lines if it's the first member
-                ...(isFirst ? [
-                    new TextRun({
-                        text: `\n\t\t\t\t\t\t${state.guide.dept}`,
-                        font: "Times New Roman",
-                        size: 24,
-                        break: 1
-                    }),
-                    new TextRun({
-                        text: `\n\t\t\t\t\t\t${state.guide.college}`,
-                        font: "Times New Roman",
-                        size: 24,
-                        break: 1
-                    })
-                ] : [])
-            ],
-            tabStops: [
-                { position: 8000, type: "left" }
-            ],
-            spacing: { line: 360, lineRule: "auto" }
-        }));
-    }
-
-    return paragraphs;
 }
