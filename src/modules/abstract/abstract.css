@@ -262,16 +262,44 @@
 
     .abstract-preview-container {
         padding: 1rem;
-        background: transparent;
+        background: rgba(241, 245, 249, 0.5);
+        overflow-x: hidden;
+        display: block;
     }
 
     .abstract-page {
-        width: 100%;
-        max-width: 210mm;
-        padding: 10mm;
+        width: 210mm;
+        min-height: 297mm;
+        position: relative;
+        left: 50%;
+        transform: translateX(-50%) scale(0.42);
+        transform-origin: top center;
+        margin: 0;
+        margin-bottom: -170mm;
+        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
     }
 
     .border-inner {
         padding: 5mm;
+    }
+}
+
+@media (max-width: 768px) {
+    .abstract-layout {
+        padding: 0.75rem;
+        gap: 1rem;
+    }
+
+    .abstract-form-container {
+        padding: 1rem;
+    }
+
+    .abstract-preview-container {
+        padding: 0.5rem;
+    }
+
+    .abstract-page {
+        transform: translateX(-50%) scale(0.38);
+        margin-bottom: -180mm;
     }
 }

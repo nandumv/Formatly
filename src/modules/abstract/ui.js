@@ -118,7 +118,7 @@ export function initAbstract(container) {
 
             <!-- Preview Area -->
             <div class="abstract-preview-container">
-                <div id="previewPaper" style="width: 100%; display: flex; flex-direction: column; align-items: center;">
+                <div id="previewPaper">
                     ${renderPreviewContent()}
                 </div>
             </div>
