@@ -56,11 +56,13 @@ export function initAbstract(container) {
             <!-- Sidebar Form -->
             <div class="abstract-form-container">
                 <div class="d-flex justify-between align-center mb-4">
-                    <h2>Details</h2>
-                    <div class="d-flex gap-2">
-                        <button class="btn btn-sm btn-outline" id="resetFormBtn" title="Clear all fields">Reset</button>
-                        <button class="btn btn-sm" onclick="window.routeTo('dashboard')">Back</button>
+                    <div class="d-flex align-center gap-2">
+                        <button onclick="window.routeTo('dashboard')" title="Back to Home" style="background:none; border:none; cursor:pointer; color:#64748b; padding:0.4rem; border-radius:50%; transition:all 0.2s; display:flex; align-items:center;" onmouseover="this.style.background='#f1f5f9'; this.style.color='#4f46e5'" onmouseout="this.style.background='transparent'; this.style.color='#64748b'">
+                            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"></path><polyline points="12 19 5 12 12 5"></polyline></svg>
+                        </button>
+                        <h2>Details</h2>
                     </div>
+                    <button class="btn btn-sm btn-outline" id="resetFormBtn" title="Clear all fields">Reset</button>
                 </div>
                 
                 <div class="abstract-form-group">

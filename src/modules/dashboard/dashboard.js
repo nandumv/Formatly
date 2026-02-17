@@ -1,6 +1,12 @@
+let splashShown = false;
+
 export function initDashboard(container) {
+    const showSplash = !splashShown;
+    splashShown = true;
+
     container.innerHTML = `
     <!-- Splash Screen -->
+    ${showSplash ? `
     <div class="splash-screen" id="splash">
         <div class="splash-shapes">
             <div class="splash-blob blob-a"></div>
@@ -11,7 +17,7 @@ export function initDashboard(container) {
             <h1 class="splash-logo animate-zoom-in">FORMATLY</h1>
             <p class="splash-sub animate-fade-in delay-200">Professional Documents. Zero Complexity.</p>
         </div>
-    </div>
+    </div>` : ''}
 
     <!-- Navbar -->
     <nav class="navbar animate-fade-in delay-200">
@@ -82,12 +88,14 @@ export function initDashboard(container) {
     </footer>
     `;
 
-    // Splash Screen Logic (1.8s duration)
-    setTimeout(() => {
-        const splash = document.getElementById('splash');
-        if (splash) {
-            splash.classList.add('fade-out');
-            setTimeout(() => splash.remove(), 800); // Wait for fade out transition
-        }
-    }, 1800);
+    // Splash Screen Logic (1.8s duration) — only on first visit
+    if (showSplash) {
+        setTimeout(() => {
+            const splash = document.getElementById('splash');
+            if (splash) {
+                splash.classList.add('fade-out');
+                setTimeout(() => splash.remove(), 800);
+            }
+        }, 1800);
+    }
 }
