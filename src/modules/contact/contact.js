@@ -143,14 +143,42 @@ export function initContact(container) {
                 return;
             }
 
-            // Simulate sending
+            // Send to Formspree
             submitBtn.innerHTML = '<span class="loading-spinner"></span> Sending...';
             submitBtn.disabled = true;
 
-            setTimeout(() => {
-                form.style.display = 'none';
-                successMsg.style.display = 'block';
-            }, 1200);
+            fetch("https://formspree.io/f/mnjbzaop", {
+                method: "POST",
+                body: JSON.stringify({
+                    name: name,
+                    email: email,
+                    subject: document.getElementById('contact-subject').value,
+                    message: message
+                }),
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json'
+                }
+            }).then(response => {
+                if (response.ok) {
+                    form.style.display = 'none';
+                    successMsg.style.display = 'block';
+                } else {
+                    response.json().then(data => {
+                        if (Object.hasOwn(data, 'errors')) {
+                            alert(data["errors"].map(error => error["message"]).join(", "));
+                        } else {
+                            alert("Oops! There was a problem submitting your form");
+                        }
+                    });
+                    submitBtn.innerHTML = 'Send Message';
+                    submitBtn.disabled = false;
+                }
+            }).catch(error => {
+                alert("Oops! There was a problem submitting your form");
+                submitBtn.innerHTML = 'Send Message';
+                submitBtn.disabled = false;
+            });
         });
     }
 }

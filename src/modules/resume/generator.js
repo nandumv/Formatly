@@ -249,8 +249,8 @@ export async function generateDOCX() {
             paragraphStyles: [
                 { id: "ResumeTitle", name: "Resume Title", run: { font: FONTS.primary, size: SIZES.NAME, bold: true, color: "000000" } },
                 { id: "JobTitle", name: "Job Title", run: { font: FONTS.primary, size: 24, smallCaps: true, color: "000000" } }, // 12pt Small Caps
-                { id: "SmallInfo", name: "Small Info", run: { font: FONTS.primary, size: 20, color: "000000" } }, // 10pt
-                { id: "Normal", name: "Normal", run: { font: FONTS.primary, size: SIZES.BODY, color: "000000" } }
+                { id: "SmallInfo", name: "Small Info", run: { font: FONTS.primary, size: 20, color: "000000" }, paragraph: { spacing: { line: 276 } } }, // 10pt with 1.15 spacing (276)
+                { id: "Normal", name: "Normal", run: { font: FONTS.primary, size: SIZES.BODY, color: "000000" }, paragraph: { spacing: { line: 276 } } } // 1.15 spacing (276)
             ]
         },
         sections: [{

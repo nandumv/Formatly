@@ -39,7 +39,7 @@ export function updatePreview() {
                     ${(r.personal.jobTitle || '').toUpperCase()}
                 </div>
                 
-                <div style="font-size: 10pt; margin-top: 6pt; line-height: 1.4; color: #444;">
+                <div style="font-size: 10pt; margin-top: 6pt; line-height: 1.15; color: #444;">
                     <div>${[r.personal.city, r.personal.country].filter(Boolean).join(', ')}</div>
                     <div>${[r.personal.email, r.personal.phone].filter(Boolean).join(' | ')}</div>
                     <div>${[r.personal.linkedin, r.personal.address].filter(Boolean).join(' | ')}</div>
@@ -123,7 +123,7 @@ export function updatePreview() {
     // Summary
     if (r.summary && r.summary.trim()) {
         blocks.push(`<div style="${sectionTitleStyle}">Professional Summary</div>`);
-        const subBlocks = createTextBlocks(r.summary, 'font-size: 11pt; line-height: 1.4; margin-bottom: 6pt;');
+        const subBlocks = createTextBlocks(r.summary, 'font-size: 11pt; line-height: 1.15; margin-bottom: 6pt;');
         blocks.push(...subBlocks);
     }
 
