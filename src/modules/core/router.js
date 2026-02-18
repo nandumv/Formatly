@@ -63,6 +63,15 @@ function render() {
 export function navigate(viewName) {
     store.update('view', viewName);
     history.pushState({ view: viewName }, '', `#${viewName}`);
+
+    // Google Analytics Tracking
+    if (typeof gtag === 'function') {
+        gtag('event', 'page_view', {
+            page_title: document.title,
+            page_location: window.location.href,
+            page_path: `/${viewName}`
+        });
+    }
 }
 
 // Expose to window for inline calls
