@@ -165,17 +165,24 @@ export function initContact(container) {
                     successMsg.style.display = 'block';
                 } else {
                     response.json().then(data => {
+                        console.error('Formspree Error Details:', data); // Log full error object
                         if (Object.hasOwn(data, 'errors')) {
                             alert(data["errors"].map(error => error["message"]).join(", "));
+                        } else if (data.error) {
+                            alert(`Error: ${data.error}`);
                         } else {
-                            alert("Oops! There was a problem submitting your form");
+                            alert("Oops! There was a problem submitting your form. Check console for details.");
                         }
+                    }).catch(err => {
+                        console.error('Formspree JSON Parse Error:', err);
+                        alert("Oops! The server returned an error that couldn't be parsed.");
                     });
                     submitBtn.innerHTML = 'Send Message';
                     submitBtn.disabled = false;
                 }
             }).catch(error => {
-                alert("Oops! There was a problem submitting your form");
+                console.error('Network/Fetch Error:', error);
+                alert("Oops! Network error. Please check your connection and try again.");
                 submitBtn.innerHTML = 'Send Message';
                 submitBtn.disabled = false;
             });
