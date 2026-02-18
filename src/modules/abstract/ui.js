@@ -349,196 +349,61 @@ function attachListeners() {
     });
 
     document.getElementById('downloadPdf').addEventListener('click', async () => {
-        const appRoot = document.getElementById('app');
-        const printRootId = 'pdf-print-root';
-        let printRoot = document.getElementById(printRootId);
-
         try {
-            const html2pdf = (await import('html2pdf.js')).default;
+            const html2canvas = (await import('html2canvas')).default;
+            const { jsPDF } = await import('jspdf');
             const timestamp = new Date().toISOString().slice(0, 10);
-            // Use local state variable
-            // const state = abstractState.get(); // ERROR WAS HERE
 
-            // 1. Setup Print Root (Visible, at the VERY TOP of the body)
-            if (!printRoot) {
-                printRoot = document.createElement('div');
-                printRoot.id = printRootId;
-                document.body.appendChild(printRoot);
+            const previewPaper = document.getElementById('previewPaper');
+            if (!previewPaper) {
+                alert('No preview found. Please fill in the form first.');
+                return;
             }
 
-            // Clean styles for capture
-            printRoot.style.display = 'block';
-            printRoot.style.position = 'absolute';
-            printRoot.style.top = '0';
-            printRoot.style.left = '0';
-            printRoot.style.width = '210mm'; // Match A4 width
-            printRoot.style.height = 'auto'; // CRITICAL: Must be auto for capture
-            printRoot.style.background = '#ffffff';
-            printRoot.style.zIndex = '9999999';
-            printRoot.style.padding = '0';
-            printRoot.style.margin = '0';
-            printRoot.innerHTML = '';
-
-            // Scroll to top
-            window.scrollTo(0, 0);
-
-            // Hide App (Opacity 0 keeps it there for styles but hidden from view)
-            if (appRoot) {
-                appRoot.style.opacity = '0';
-                appRoot.style.pointerEvents = 'none';
+            const pages = previewPaper.querySelectorAll('.abstract-page');
+            if (!pages.length) {
+                alert('No content to export.');
+                return;
             }
 
-            // Helper to create a new A4 page
-            const createPage = () => {
-                const page = document.createElement('div');
-                page.className = 'abstract-page-print';
-                page.style.width = '210mm';
-                page.style.height = '297mm';
-                page.style.padding = '12.7mm';
-                page.style.backgroundColor = '#ffffff';
-                page.style.boxSizing = 'border-box';
-                page.style.position = 'relative';
-                // Critical for html2pdf split logic
-                page.style.pageBreakAfter = 'always';
+            // Create A4 PDF
+            const pdf = new jsPDF({ unit: 'mm', format: 'a4', orientation: 'portrait' });
+            const pdfWidth = 210;
+            const pdfHeight = 297;
 
-                page.innerHTML = `
-                    <div class="border-outer" style="height: 100%; border: 1.5pt double black; padding: 4px; display: flex; flex-direction: column; box-sizing: border-box; background: white;">
-                        <div class="border-inner" style="height: 100%; border: 1pt solid black; padding: 5mm; display: flex; flex-direction: column; box-sizing: border-box; background: white;">
-                            <div class="page-content" style="flex: 1; display: flex; flex-direction: column; color: black !important;"></div>
-                        </div>
-                    </div>
-                `;
-                printRoot.appendChild(page);
-                return page.querySelector('.page-content');
-            };
+            for (let i = 0; i < pages.length; i++) {
+                const page = pages[i];
 
-            let currentPageContent = createPage();
+                // Temporarily strip decorative styles for clean capture
+                const origShadow = page.style.boxShadow;
+                const origMargin = page.style.marginBottom;
+                page.style.boxShadow = 'none';
+                page.style.marginBottom = '0';
 
-            // Add Header
-            const header = document.createElement('div');
-            header.style.color = 'black';
-            header.innerHTML = `
-                <div style="text-align: center; font-weight: bold; font-size: 16pt; text-decoration: underline; margin-bottom: 2rem; text-transform: uppercase; font-family: 'Times New Roman', serif;">
-                    ${(state.title || 'PROJECT TITLE').toUpperCase()}
-                    ${state.domain ? `<br><span style="font-size: 12pt; text-decoration: none; display: block; margin-top: 5px;">(${state.domain})</span>` : ''}
-                </div>
-                <div style="font-weight: bold; font-size: 14pt; text-decoration: underline; margin-bottom: 1rem; text-transform: uppercase; font-family: 'Times New Roman', serif;">ABSTRACT</div>
-            `;
-            currentPageContent.appendChild(header);
+                // Capture this single page
+                const canvas = await html2canvas(page, {
+                    scale: 2,
+                    useCORS: true,
+                    backgroundColor: '#ffffff',
+                    logging: false
+                });
 
-            // Add Content
-            const paragraphs = (state.abstract || '').split('\n').filter(p => p.trim());
-            let loopSafety = 0;
-            paragraphs.forEach((text, index) => {
-                const p = document.createElement('p');
-                p.style.fontSize = '12pt';
-                p.style.lineHeight = '1.5';
-                p.style.textAlign = 'justify';
-                p.style.textIndent = index === 0 ? '3rem' : '0';
-                p.style.marginBottom = '1rem';
-                p.style.marginTop = '0';
-                p.style.fontFamily = "'Times New Roman', serif";
-                p.style.color = 'black';
-                p.innerText = text;
+                // Restore styles immediately
+                page.style.boxShadow = origShadow;
+                page.style.marginBottom = origMargin;
 
-                currentPageContent.appendChild(p);
+                // Add page to PDF (add new page for 2nd+ pages)
+                if (i > 0) pdf.addPage();
 
-                const innerBorder = currentPageContent.closest('.border-inner');
-                if (currentPageContent.scrollHeight > innerBorder.clientHeight) {
-                    currentPageContent.removeChild(p);
-                    currentPageContent = createPage();
-                    p.style.textIndent = '0';
-                    currentPageContent.appendChild(p);
-                }
-                if (++loopSafety > 500) throw new Error("Safety stop");
-            });
-
-            // Keywords
-            if (state.keywords) {
-                const kDiv = document.createElement('div');
-                kDiv.style.marginTop = '1.5rem';
-                kDiv.style.fontSize = '12pt';
-                kDiv.style.fontFamily = "'Times New Roman', serif";
-                kDiv.style.color = 'black';
-                kDiv.innerHTML = `<strong>Keywords:</strong> ${state.keywords}`;
-                currentPageContent.appendChild(kDiv);
-
-                const innerBorder = currentPageContent.closest('.border-inner');
-                if (currentPageContent.scrollHeight > innerBorder.clientHeight) {
-                    currentPageContent.removeChild(kDiv);
-                    currentPageContent = createPage();
-                    currentPageContent.appendChild(kDiv);
-                }
+                const imgData = canvas.toDataURL('image/jpeg', 0.98);
+                pdf.addImage(imgData, 'JPEG', 0, 0, pdfWidth, pdfHeight);
             }
 
-            // Signatures
-            const members = state.members.filter(m => m.name.trim());
-            const guide = state.guide;
-            if (members.length > 0 || (guide && guide.name.trim())) {
-                const sigSection = document.createElement('div');
-                sigSection.style.display = 'flex';
-                sigSection.style.justifyContent = 'space-between';
-                sigSection.style.marginTop = '3rem';
-                sigSection.style.fontSize = '12pt';
-                sigSection.style.fontFamily = "'Times New Roman', serif";
-                sigSection.style.color = 'black';
-
-                let membersHtml = members.length > 0 ? `
-                    <div style="width: 45%;">
-                        <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 1rem;">GROUP MEMBERS</div>
-                        <ul style="list-style: none; padding: 0;">
-                            ${members.map(m => `<li style="margin-bottom: 0.25rem;">${m.name.toUpperCase()} ${m.reg ? `(${m.reg})` : ''}</li>`).join('')}
-                        </ul>
-                    </div>
-                ` : '';
-
-                let guideHtml = (guide && guide.name.trim()) ? `
-                    <div style="width: 45%; text-align: right;">
-                        <div style="font-weight: bold; text-transform: uppercase; margin-bottom: 1rem;">GUIDE</div>
-                        <div style="font-weight: bold;">${guide.name.toUpperCase()}</div>
-                        ${guide.designation ? `<div>${guide.designation}</div>` : ''}
-                        ${guide.dept ? `<div>${guide.dept}</div>` : ''}
-                        ${guide.college ? `<div>${guide.college}</div>` : ''}
-                    </div>
-                ` : '';
-
-                sigSection.innerHTML = membersHtml + guideHtml;
-                currentPageContent.appendChild(sigSection);
-
-                const innerBorder = currentPageContent.closest('.border-inner');
-                if (currentPageContent.scrollHeight > innerBorder.clientHeight) {
-                    currentPageContent.removeChild(sigSection);
-                    currentPageContent = createPage();
-                    currentPageContent.appendChild(sigSection);
-                }
-            }
-
-            // Capture logic
-            await new Promise(r => setTimeout(r, 1000)); // Full second for safety
-
-            const opt = {
-                margin: 0,
-                filename: `Abstract_${timestamp}.pdf`,
-                image: { type: 'jpeg', quality: 0.98 },
-                html2canvas: { scale: 2, useCORS: true, letterRendering: true, scrollY: 0 },
-                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
-            };
-
-            await html2pdf().set(opt).from(printRoot).save();
+            pdf.save(`Abstract_${timestamp}.pdf`);
 
         } catch (err) {
             console.error("PDF Export Failed:", err);
             alert("Failed to generate PDF. " + err.message);
-        } finally {
-            // Restore App & Cleanup
-            if (appRoot) {
-                appRoot.style.opacity = '';
-                appRoot.style.pointerEvents = '';
-            }
-            if (printRoot) {
-                printRoot.style.display = 'none';
-                printRoot.innerHTML = '';
-            }
         }
     });
 
