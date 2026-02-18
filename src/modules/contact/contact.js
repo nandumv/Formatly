@@ -28,18 +28,18 @@ export function initContact(container) {
                 <!-- Contact Form -->
                 <div class="contact-form-card animate-slide-up delay-200">
                     <h3>Send us a Message</h3>
-                    <form id="contact-form" onsubmit="return false;">
+                    <form id="contact-form" action="https://formspree.io/f/mnjbzaop" method="POST">
                         <div class="contact-form-group">
                             <label for="contact-name">Full Name</label>
-                            <input type="text" id="contact-name" placeholder="e.g. John Doe" required>
+                            <input type="text" id="contact-name" name="name" placeholder="e.g. John Doe" required>
                         </div>
                         <div class="contact-form-group">
                             <label for="contact-email">Email Address</label>
-                            <input type="email" id="contact-email" placeholder="e.g. john@university.edu" required>
+                            <input type="email" id="contact-email" name="email" placeholder="e.g. john@university.edu" required>
                         </div>
                         <div class="contact-form-group">
                             <label for="contact-subject">Subject</label>
-                            <select id="contact-subject">
+                            <select id="contact-subject" name="subject">
                                 <option value="">Select a topic...</option>
                                 <option value="feedback">General Feedback</option>
                                 <option value="bug">Report a Bug</option>
@@ -50,7 +50,7 @@ export function initContact(container) {
                         </div>
                         <div class="contact-form-group">
                             <label for="contact-message">Message</label>
-                            <textarea id="contact-message" rows="5" placeholder="Write your message here..." required></textarea>
+                            <textarea id="contact-message" name="message" rows="5" placeholder="Write your message here..." required></textarea>
                         </div>
                         <button type="submit" class="btn btn-primary w-full contact-submit-btn" id="contact-submit">
                             Send Message
@@ -134,30 +134,17 @@ export function initContact(container) {
         form.addEventListener('submit', (e) => {
             e.preventDefault();
 
-            const name = document.getElementById('contact-name').value.trim();
-            const email = document.getElementById('contact-email').value.trim();
-            const message = document.getElementById('contact-message').value.trim();
-
-            if (!name || !email || !message) {
-                alert('Please fill in all required fields.');
-                return;
-            }
-
-            // Send to Formspree
+            // Send to Formspree using FormData
             submitBtn.innerHTML = '<span class="loading-spinner"></span> Sending...';
             submitBtn.disabled = true;
 
-            fetch("https://formspree.io/f/mnjbzaop", {
-                method: "POST",
-                body: JSON.stringify({
-                    name: name,
-                    email: email,
-                    subject: document.getElementById('contact-subject').value,
-                    message: message
-                }),
+            const formData = new FormData(form);
+
+            fetch(form.action, {
+                method: form.method,
+                body: formData,
                 headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
+                    'Accept': 'application/json'
                 }
             }).then(response => {
                 if (response.ok) {
