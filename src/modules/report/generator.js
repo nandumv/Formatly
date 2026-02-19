@@ -16,13 +16,13 @@ export function generateReportDocx(s) {
     // Header: College + Department
     children.push(new Paragraph({
         alignment: AlignmentType.CENTER,
-        children: [textRun(`${(s.collegeName || '').toUpperCase()}${s.collegeAddress ? `, ${s.collegeAddress.toUpperCase()}` : ''}`, 26, true)],
-        spacing: { after: 60, line: LINE_SPACING, lineRule: 'auto' },
+        children: [textRun(`${(s.collegeName || '').toUpperCase()}${s.collegeAddress ? `, ${s.collegeAddress.toUpperCase()}` : ''}`, 32, true)], // 16pt
+        spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
     }));
     children.push(new Paragraph({
         alignment: AlignmentType.CENTER,
-        children: [textRun(`DEPARTMENT OF ${(s.departmentName || '').toUpperCase()}`, 26, true)],
-        spacing: { after: 240, line: LINE_SPACING, lineRule: 'auto' },
+        children: [textRun(`DEPARTMENT OF ${(s.departmentName || '').toUpperCase()}`, 28, true)], // 14pt
+        spacing: { after: 480, line: LINE_SPACING, lineRule: 'auto' },
     }));
 
     // Certificate Logo (or University Logo fallback)
@@ -31,12 +31,12 @@ export function generateReportDocx(s) {
         try {
             const image = new ImageRun({
                 data: certLogo.split(',')[1],
-                transformation: { width: 100, height: 100 },
+                transformation: { width: 120, height: 120 }, // Slightly larger logo
             });
             children.push(new Paragraph({
                 alignment: AlignmentType.CENTER,
                 children: [image],
-                spacing: { after: 240, line: LINE_SPACING, lineRule: 'auto' },
+                spacing: { after: 480, line: LINE_SPACING, lineRule: 'auto' },
             }));
         } catch (e) {
             console.warn('Failed to add certificate logo to DOCX', e);
@@ -46,8 +46,8 @@ export function generateReportDocx(s) {
     // CERTIFICATE heading
     children.push(new Paragraph({
         alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: 'CERTIFICATE', font: FONT, size: 28, bold: true, color: '000000' })],
-        spacing: { after: 480, line: LINE_SPACING, lineRule: 'auto' },
+        children: [new TextRun({ text: 'CERTIFICATE', font: FONT, size: 40, bold: true, color: '000000' })], // 20pt
+        spacing: { after: 720, line: LINE_SPACING, lineRule: 'auto' }, // More space after title
         keepNext: true,
         keepLines: true,
     }));
@@ -55,7 +55,7 @@ export function generateReportDocx(s) {
     const certText = s.certificateText || generateCertBodyText(s);
     if (certText) {
         certText.split('\n').filter(p => p.trim()).forEach(p => {
-            children.push(bodyPara(p));
+            children.push(bodyPara(p, 28)); // 14pt body
         });
     }
     // Signatory blocks
@@ -64,14 +64,37 @@ export function generateReportDocx(s) {
 
     // ─── Declaration ────────────────────────────
     children.push(heading('DECLARATION'));
-    if (s.declarationText) {
-        s.declarationText.split('\n').filter(p => p.trim()).forEach(p => {
-            children.push(bodyPara(p));
-        });
-    }
+
+    // Construct the specific declaration text with mixed formatting
+    const declMemberNames = s.members.filter(m => m.name).map(m => m.name.toUpperCase()).join(', ');
+    const declPara = new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { line: 360, lineRule: 'auto' }, // 1.5 spacing
+        children: [
+            textRun('We hereby certify that the work which is being presented in the Project stage Entitled "', 28, false),
+            textRun((s.projectTitle || '').toUpperCase(), 28, true), // Bold Title
+            textRun('" by ', 28, false),
+            textRun(declMemberNames || '[MEMBER NAMES]', 28, true), // Bold Names
+            textRun(' in partial fulfilment of requirements for the award of degree of ', 28, false),
+            textRun(s.degreeName || 'B. Tech', 28, false),
+            textRun(' in the Department of ', 28, false),
+            textRun(s.departmentName || '[Department]', 28, false),
+            textRun(' at ', 28, false),
+            textRun((s.collegeName || '[COLLEGE NAME]').toUpperCase(), 28, true), // Bold College
+            textRun(' under ', 28, false),
+            textRun((s.universityName || '[UNIVERSITY NAME]').toUpperCase(), 28, true), // Bold University
+            textRun(' is an authentic record of our own work carried out during a period ', 28, false),
+            textRun(s.academicYear || '[Year]', 28, false),
+            textRun('. The matter presented in this project has not been submitted by us or anybody else in any other University / Institute for the award of ', 28, false),
+            textRun(s.degreeName || 'B. Tech', 28, false),
+            textRun(' Degree.', 28, false),
+        ],
+    });
+
+    children.push(declPara);
 
     // Declaration Footer (Date & Signature)
-    children.push(new Paragraph({ spacing: { before: 800 } })); // Spacer
+    children.push(new Paragraph({ spacing: { before: 1440 } })); // Large Spacer (approx 2 inches or enough to push to bottom)
     children.push(new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
         borders: {
@@ -86,11 +109,11 @@ export function generateReportDocx(s) {
             new TableRow({
                 children: [
                     new TableCell({
-                        children: [new Paragraph({ children: [textRun('Date :', 24, true)] })],
+                        children: [new Paragraph({ children: [textRun('Date :', 28, false)] })],
                         width: { size: 50, type: WidthType.PERCENTAGE },
                     }),
                     new TableCell({
-                        children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [textRun('Signature :', 24, true)] })],
+                        children: [new Paragraph({ alignment: AlignmentType.RIGHT, children: [textRun('Signature :', 28, false)] })],
                         width: { size: 50, type: WidthType.PERCENTAGE },
                     }),
                 ],
@@ -101,13 +124,63 @@ export function generateReportDocx(s) {
     children.push(pageBreak());
 
     // ─── Acknowledgement ────────────────────────
-    if (s.acknowledgement) {
-        children.push(heading('ACKNOWLEDGEMENT'));
-        s.acknowledgement.split('\n').filter(p => p.trim()).forEach(p => {
-            children.push(bodyPara(p));
-        });
-        children.push(pageBreak());
-    }
+    // ─── Acknowledgement ────────────────────────
+    children.push(heading('ACKNOWLEDGEMENT'));
+
+    // Para 1: Almighty + Project Title
+    children.push(new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { after: 240, line: 360, lineRule: 'auto' },
+        children: [
+            textRun('First and foremost, we sincerely thank the Almighty for his grace for the successful and timely completion of the stage of our project "', 28, false),
+            textRun((s.projectTitle || '[PROJECT TITLE]').toUpperCase(), 28, true), // Bold Title
+            textRun('". We are greatly indebted to all those who helped us to make this project successful.', 28, false),
+        ],
+    }));
+
+    // Para 2: Principal, HOD, Guide, Coordinators
+    children.push(new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { after: 240, line: 360, lineRule: 'auto' },
+        children: [
+            textRun('We are also grateful to ', 28, false),
+            textRun(s.principalName || '[Principal Name]', 28, true), // Bold Principal
+            textRun(', Principal, ', 28, false),
+            textRun(s.collegeName || '[College Name]', 28, false),
+            textRun(', for providing us with the best facilities and atmosphere for our project development. We also wish to express our gratitude to ', 28, false),
+            textRun(s.hodName || '[HOD Name]', 28, true), // Bold HOD
+            textRun(', ', 28, false),
+            textRun(s.hodDesignation || 'Head of Department', 28, false), // e.g. "Associate Professor & H.O.D"
+            textRun(', Department of ', 28, false),
+            textRun(s.departmentName || '[Department]', 28, false),
+            textRun('. We owe special thanks to our Project Guide ', 28, false),
+            textRun(s.guideName || '[Guide Name]', 28, true), // Bold Guide
+            textRun(', ', 28, false),
+            textRun(s.guideDesignation || 'Assistant Professor', 28, false),
+            textRun(', Department of ', 28, false),
+            textRun(s.guideDepartment || s.departmentName || '[Department]', 28, false),
+            textRun(' and our coordinators ', 28, false),
+            textRun(s.coordinator1Name || '[Coordinator 1]', 28, true), // Bold Coord 1
+            textRun(' and ', 28, false),
+            textRun(s.coordinator2Name || '[Coordinator 2]', 28, true), // Bold Coord 2
+            textRun(', ', 28, false),
+            textRun(s.coordinator1Designation || 'Assistant Professors', 28, false),
+            textRun(', Department of ', 28, false),
+            textRun(s.departmentName || '[Department]', 28, false),
+            textRun(', for their corrections, valuable and countless suggestions, support and timely guidance.', 28, false),
+        ],
+    }));
+
+    // Para 3: Friends
+    children.push(new Paragraph({
+        alignment: AlignmentType.JUSTIFIED,
+        spacing: { after: 240, line: 360, lineRule: 'auto' },
+        children: [
+            textRun('Finally, but not least we would like to acknowledge our friends who were inevitable for the successful completion of this project.', 28, false),
+        ],
+    }));
+
+    children.push(pageBreak());
 
     // ─── Abstract ───────────────────────────────
     if (s.abstract) {
@@ -297,10 +370,10 @@ function heading(text) {
     });
 }
 
-function bodyPara(text) {
+function bodyPara(text, size = 24) {
     return new Paragraph({
         alignment: AlignmentType.JUSTIFIED,
-        children: [textRun(text, 24, false)],
+        children: [textRun(text, size, false)],
         spacing: { after: 200, line: LINE_SPACING, lineRule: 'auto' },
     });
 }
@@ -316,133 +389,133 @@ function buildCoverPage(s) {
     const paras = [];
     const memberNames = s.members.filter(m => m.name).map(m => `${m.name.toUpperCase()}${m.regNo ? ` (${m.regNo})` : ''}`);
 
-    // University Logo (Centered at top)
+    // Project Title (underlined, at top) - 18pt
+    paras.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [textRun((s.projectTitle || '').toUpperCase(), 36, true)], // 18pt
+        spacing: { before: 240, after: 480, line: LINE_SPACING, lineRule: 'auto' },
+    }));
+
+    // Report Type (e.g. MINI PROJECT REPORT) - 16pt
+    paras.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [textRun(s.reportType || 'MINI PROJECT REPORT', 32, true)], // 16pt
+        spacing: { after: 720, line: LINE_SPACING, lineRule: 'auto' },
+    }));
+
+    // "Submitted by" (italic) - 12pt
+    paras.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: 'Submitted by', font: FONT, size: 24, italics: true })],
+        spacing: { after: 240, line: LINE_SPACING, lineRule: 'auto' },
+    }));
+
+    // Member names (bold, uppercase, with reg numbers) - 14pt
+    memberNames.forEach(name => {
+        paras.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [textRun(name, 28, true)], // 14pt
+            spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
+        }));
+    });
+
+    // "Under the guidance of" (italic) - 12pt
+    paras.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: 'Under the guidance of', font: FONT, size: 24, italics: true })],
+        spacing: { before: 720, after: 240, line: LINE_SPACING, lineRule: 'auto' },
+    }));
+
+    // Guide Name (bold, larger) - 16pt
+    if (s.guideName) {
+        paras.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [textRun(s.guideName.toUpperCase(), 32, true)], // 16pt
+            spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
+        }));
+    }
+
+    // Guide Designation (italic) - 12pt
+    if (s.guideDesignation) {
+        paras.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: s.guideDesignation, font: FONT, size: 24, italics: true })],
+            spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
+        }));
+    }
+
+    // Guide Department (bold, italic) - 12pt
+    if (s.departmentName) {
+        paras.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: `Department of ${s.departmentName}`, font: FONT, size: 24, bold: true, italics: true })],
+            spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
+        }));
+    }
+
+    // Guide College (bold, italic) - 12pt
+    if (s.collegeName) {
+        paras.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [new TextRun({ text: s.collegeName, font: FONT, size: 24, bold: true, italics: true })],
+            spacing: { after: 240, line: LINE_SPACING, lineRule: 'auto' },
+        }));
+    }
+
+    // "to" - 12pt
+    paras.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [textRun('to', 24, false)],
+        spacing: { after: 240, line: LINE_SPACING, lineRule: 'auto' },
+    }));
+
+    // University (bold) - 14pt
+    if (s.universityName) {
+        const uniText = `the ${s.universityName}${s.collegeAddress ? `, ${s.collegeAddress}` : ''}`;
+        paras.push(new Paragraph({
+            alignment: AlignmentType.CENTER,
+            children: [textRun(uniText, 28, true)], // 14pt
+            spacing: { after: 240, line: LINE_SPACING, lineRule: 'auto' },
+        }));
+    }
+
+    // Fulfillment text - 12pt
+    paras.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [textRun('in partial fulfillment of the requirements for the award of', 24, false)],
+        spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
+    }));
+
+    // Degree name - 14pt
+    paras.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [textRun(s.degreeName || s.course || '', 28, true)], // 14pt
+        spacing: { after: 480, line: LINE_SPACING, lineRule: 'auto' },
+    }));
+
+    // University Logo (Centered at bottom)
     if (s.universityLogo) {
         try {
             const image = new ImageRun({
                 data: s.universityLogo.split(',')[1],
-                transformation: { width: 100, height: 100 },
+                transformation: { width: 120, height: 120 },
             });
             paras.push(new Paragraph({
                 alignment: AlignmentType.CENTER,
                 children: [image],
-                spacing: { after: 240, line: LINE_SPACING, lineRule: 'auto' },
+                spacing: { after: 480, line: LINE_SPACING, lineRule: 'auto' },
             }));
         } catch (e) {
             console.warn('Failed to add university logo to DOCX cover page', e);
         }
     }
 
-    // Project Title (underlined, at top)
-    paras.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [textRun((s.projectTitle || '').toUpperCase(), 32, true)],
-        spacing: { after: 600, line: LINE_SPACING, lineRule: 'auto' },
-    }));
-
-    // Report Type (e.g. MINI PROJECT REPORT)
-    paras.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [textRun(s.reportType || 'MINI PROJECT REPORT', 28, true)],
-        spacing: { after: 600, line: LINE_SPACING, lineRule: 'auto' },
-    }));
-
-    // "Submitted by" (italic)
-    paras.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: 'Submitted by', font: FONT, size: 24, italics: true })],
-        spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
-    }));
-
-    // Member names (bold, uppercase, with reg numbers)
-    memberNames.forEach(name => {
-        paras.push(new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [textRun(name, 24, true)],
-            spacing: { after: 60, line: LINE_SPACING, lineRule: 'auto' },
-        }));
-    });
-
-    // "Under the guidance of" (italic)
-    paras.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: 'Under the guidance of', font: FONT, size: 24, italics: true })],
-        spacing: { before: 360, after: 200, line: LINE_SPACING, lineRule: 'auto' },
-    }));
-
-    // Guide Name (bold, larger)
-    if (s.guideName) {
-        paras.push(new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [textRun(s.guideName.toUpperCase(), 28, true)],
-            spacing: { after: 60, line: LINE_SPACING, lineRule: 'auto' },
-        }));
-    }
-
-    // Guide Designation (italic)
-    if (s.guideDesignation) {
-        paras.push(new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: s.guideDesignation, font: FONT, size: 24, italics: true })],
-            spacing: { after: 60, line: LINE_SPACING, lineRule: 'auto' },
-        }));
-    }
-
-    // Department (bold, italic)
+    // Bottom: Department + College - 14pt/12pt
     if (s.departmentName) {
         paras.push(new Paragraph({
             alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: `Department of ${s.departmentName}`, font: FONT, size: 24, bold: true, italics: true })],
-            spacing: { after: 60, line: LINE_SPACING, lineRule: 'auto' },
-        }));
-    }
-
-    // College (bold, italic)
-    if (s.collegeName) {
-        paras.push(new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: s.collegeName, font: FONT, size: 24, bold: true, italics: true })],
-            spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
-        }));
-    }
-
-    // "to"
-    paras.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [textRun('to', 24, false)],
-        spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
-    }));
-
-    // University (bold)
-    if (s.universityName) {
-        const uniText = `the ${s.universityName}${s.collegeAddress ? `, ${s.collegeAddress}` : ''}`;
-        paras.push(new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [textRun(uniText, 24, true)],
-            spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
-        }));
-    }
-
-    // Fulfillment text
-    paras.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [textRun('in partial fulfillment of the requirements for the award of', 24, false)],
-        spacing: { after: 60, line: LINE_SPACING, lineRule: 'auto' },
-    }));
-
-    // Degree name
-    paras.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [textRun(s.degreeName || s.course || '', 24, false)],
-        spacing: { after: 480, line: LINE_SPACING, lineRule: 'auto' },
-    }));
-
-    // Bottom: Department + College
-    if (s.departmentName) {
-        paras.push(new Paragraph({
-            alignment: AlignmentType.CENTER,
-            children: [textRun(`Department of ${s.departmentName}`, 26, true)],
-            spacing: { before: 480, after: 60, line: LINE_SPACING, lineRule: 'auto' },
+            children: [textRun(`Department of ${s.departmentName}`, 28, true)], // 14pt
+            spacing: { before: 240, after: 120, line: LINE_SPACING, lineRule: 'auto' },
         }));
     }
 
@@ -450,7 +523,7 @@ function buildCoverPage(s) {
         const collegeBottom = `${s.collegeName}${s.collegeAddress ? `, ${s.collegeAddress}` : ''}`;
         paras.push(new Paragraph({
             alignment: AlignmentType.CENTER,
-            children: [new TextRun({ text: collegeBottom, font: FONT, size: 24, bold: true, italics: true })],
+            children: [textRun(collegeBottom, 24, false)], // 12pt
             spacing: { line: LINE_SPACING, lineRule: 'auto' },
         }));
     }
@@ -477,7 +550,7 @@ function buildSignatoryRows(s) {
 
         lines.push(new Paragraph({
             alignment: AlignmentType.CENTER,
-            children: [textRun(name, 22, true)],
+            children: [textRun(name, 24, true)], // 12pt
             spacing: { line: LINE_SPACING, lineRule: 'auto' },
         }));
         if (role) {

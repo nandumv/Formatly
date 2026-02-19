@@ -108,6 +108,14 @@ export function renderMembersGuide() {
 
         <hr style="border:none;border-top:1px solid #e2e8f0;margin:1.5rem 0;">
 
+        <label style="font-size:0.8rem;font-weight:600;color:#334155;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:0.5rem;display:block;">Principal</label>
+        <div class="rpt-field">
+            <label>Principal Name</label>
+            <input type="text" id="rpt-principalName" value="${esc(s.principalName)}" placeholder="Dr. Name" />
+        </div>
+
+        <hr style="border:none;border-top:1px solid #e2e8f0;margin:1.5rem 0;">
+
         <label style="font-size:0.8rem;font-weight:600;color:#334155;text-transform:uppercase;letter-spacing:0.3px;margin-bottom:0.5rem;display:block;">Project Guide</label>
         <div class="rpt-field-row">
             <div class="rpt-field">

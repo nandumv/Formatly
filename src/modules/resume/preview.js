@@ -91,10 +91,12 @@ export function updatePreview() {
             line = line.trim();
             if (!line) return;
 
-            // Split formatting (bold/bullet)
-            let prefix = '';
-            if (itemStyle.includes('padding-left')) { // Bullet detection logic
-                prefix = '<span style="position: absolute; left: 0; top: 0;">•</span>';
+            const isBullet = itemStyle.includes('padding-left');
+
+            // Prepare style for Flexbox if bullet
+            let finalStyle = style;
+            if (isBullet) {
+                finalStyle = finalStyle.replace(/padding-left:\s*[\d\w]+;?/g, '').replace(/position:\s*relative;?/g, '') + ' display: flex;';
             }
 
             // If line is very long (> 200 chars), try split by sentences
@@ -103,18 +105,27 @@ export function updatePreview() {
                 const sentences = line.match(/[^.!?]+[.!?]+(\s|$)/g) || [line];
                 sentences.forEach((dev, idx) => {
                     const isLast = idx === sentences.length - 1;
-                    const sStyle = idx === 0 ? style : style.replace('margin-top', '0').replace('padding-top', '0'); // Remove top margin for continuations
+                    // Remove top margin for continuations
+                    let sStyle = idx === 0 ? finalStyle : finalStyle.replace(/margin-top:\s*[\d\w]+;?/, 'margin-top:0;').replace(/padding-top:\s*[\d\w]+;?/, 'padding-top:0;');
 
-                    // Only the first sentence gets the bullet
-                    const content = idx === 0 ? `${prefix}<div style="text-align: justify;">${dev.trim()}</div>` : `<div style="text-align: justify;">${dev.trim()}</div>`;
+                    if (!isLast) sStyle += ' margin-bottom: 0;';
 
-                    // Only the last sentence gets partial bottom margin
-                    const finalStyle = isLast ? sStyle : sStyle + 'margin-bottom: 0;';
+                    const contentText = `<div style="text-align: justify; flex: 1;">${dev.trim()}</div>`;
 
-                    chunks.push(`<div style="${finalStyle}">${content}</div>`);
+                    if (isBullet) {
+                        const bullet = idx === 0 ? '<div style="min-width: 20px; user-select: none;">•</div>' : '<div style="min-width: 20px; user-select: none;"></div>';
+                        chunks.push(`<div style="${sStyle}">${bullet}${contentText}</div>`);
+                    } else {
+                        chunks.push(`<div style="${sStyle}">${contentText}</div>`);
+                    }
                 });
             } else {
-                chunks.push(`<div style="${style}">${prefix}<div style="text-align: justify;">${line}</div></div>`);
+                const contentText = `<div style="text-align: justify; flex: 1;">${line}</div>`;
+                if (isBullet) {
+                    chunks.push(`<div style="${finalStyle}"><div style="min-width: 20px; user-select: none;">•</div>${contentText}</div>`);
+                } else {
+                    chunks.push(`<div style="${finalStyle}">${contentText}</div>`);
+                }
             }
         });
         return chunks;
@@ -189,7 +200,10 @@ export function updatePreview() {
     // Languages
     if (r.languages.length > 0) {
         blocks.push(`<div style="${sectionTitleStyle}">Languages</div>`);
-        const langHtml = r.languages.map(l => `<span>${l.language} (${l.proficiency})</span>`).join(' • ');
+        const langHtml = r.languages.map(l => {
+            const proficiency = l.proficiency && l.proficiency.trim() ? ` (${l.proficiency})` : '';
+            return `<div>${l.language}${proficiency}</div>`;
+        }).join('');
         blocks.push(`<div style="font-size: 11pt;">${langHtml}</div>`);
     }
 
@@ -199,7 +213,7 @@ export function updatePreview() {
         r.projects.forEach(p => {
             blocks.push(`<div style="font-weight:bold; font-size:11pt; margin-bottom: 2pt;">${p.title}</div>`);
             if (p.desc) {
-                const subBlocks = createTextBlocks(p.desc, 'font-size: 11pt; margin-bottom: 4pt;');
+                const subBlocks = createTextBlocks(p.desc, 'padding-left: 20px; position: relative; margin-bottom: 2pt; font-size: 11pt;', 'padding-left');
                 blocks.push(...subBlocks);
             }
             blocks.push(`<div style="height: 8pt;"></div>`);
@@ -226,9 +240,10 @@ export function updatePreview() {
     }
 
     // Interests
-    if (r.interests) {
+    if (r.interests && r.interests.trim()) {
         blocks.push(`<div style="${sectionTitleStyle}">Interests</div>`);
-        blocks.push(`<div style="font-size: 11pt;">${r.interests}</div>`);
+        const subBlocks = createTextBlocks(r.interests, 'font-size: 11pt; margin-bottom: 4pt;');
+        blocks.push(...subBlocks);
     }
 
     // References

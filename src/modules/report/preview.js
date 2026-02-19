@@ -27,15 +27,14 @@ export function renderFullPreview(container) {
     }
 
     if (s.declarationText || s.members.some(m => m.name)) {
-        container.appendChild(createPage(renderFrontMatterPageHTML('Declaration', s.declarationText || generateDeclText(s))));
+        container.appendChild(createPage(renderFrontMatterPageHTML('Declaration', s.declarationText || generateDeclText(s), s)));
     }
 
-    if (s.acknowledgement) {
-        container.appendChild(createPage(renderFrontMatterPageHTML('Acknowledgement', s.acknowledgement)));
-    }
+    // Always render Acknowledgement as it is now auto-generated
+    container.appendChild(createPage(renderFrontMatterPageHTML('Acknowledgement', '', s)));
 
     if (s.abstract) {
-        container.appendChild(createPage(renderFrontMatterPageHTML('Abstract', s.abstract)));
+        container.appendChild(createPage(renderFrontMatterPageHTML('Abstract', s.abstract, s)));
     }
 
     // 3. TOC (For now, single page assumed, but could paginate if needed)
@@ -224,61 +223,95 @@ function getMarginBottom(el) {
 // --- HTML Generators (returning strings) ---
 
 function renderCoverPageHTML(s) {
-    // Reuse existing logic but return HTML string
-    // ... (Copied from previous renderCoverPage but returning string)
     const memberLines = s.members.filter(m => m.name).map(m =>
-        `<div style="font-size:12pt;font-weight:bold;text-transform:uppercase;">${escH(m.name)}${m.regNo ? ` (${escH(m.regNo)})` : ''}</div>`
+        `<div style="font-size:14pt;font-weight:bold;text-transform:uppercase; margin-bottom: 0.25rem;">${escH(m.name)}${m.regNo ? ` (${escH(m.regNo)})` : ''}</div>`
     ).join('');
 
     return `
-        <div class="cover-page" style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:center; text-align:center;">
-             <div class="cover-project-title" style="margin-top:1rem; font-size:16pt; font-weight:bold; text-transform:uppercase; margin-bottom:2rem;">
+        <div class="cover-page" style="height:100%; display:flex; flex-direction:column; align-items:center; justify-content:space-between; text-align:center; padding: 2rem 0;">
+             <div class="cover-project-title" style="margin-top:2rem; font-size:18pt; font-weight:bold; text-transform:uppercase;">
                 ${s.projectTitle ? s.projectTitle.toUpperCase() : '<span class="placeholder-text">PROJECT TITLE</span>'}
             </div>
             
-             <div style="font-size:14pt;font-weight:bold;text-transform:uppercase; margin-bottom:2rem;">
+             <div style="font-size:16pt;font-weight:bold;text-transform:uppercase;">
                 ${s.reportType || 'MINI PROJECT REPORT'}
             </div>
 
-            <div style="font-size:12pt;font-style:italic;">Submitted by</div>
-            <div style="margin-top:0.3rem;line-height:1.8; margin-bottom:1.5rem;">
+            <div>
+                <div style="font-size:12pt;font-style:italic; margin-bottom: 1rem;">Submitted by</div>
                 ${memberLines || '<span class="placeholder-text">Member Names</span>'}
             </div>
 
-            <div style="font-size:12pt;font-style:italic;">Under the guidance of</div>
-             <div style="font-size:14pt;font-weight:bold;text-transform:uppercase; margin-top:0.5rem;">
-                ${s.guideName || '<span class="placeholder-text">Guide Name</span>'}
-            </div>
-            ${s.guideDesignation ? `<div style="font-size:12pt;font-style:italic;">${escH(s.guideDesignation)}</div>` : ''}
-
-            ${s.departmentName ? `<div style="font-size:12pt;font-weight:bold;font-style:italic;margin-top:0.3rem;">Department of ${escH(s.departmentName)}</div>` : ''}
-            ${s.collegeName ? `<div style="font-size:12pt;font-weight:bold;font-style:italic;">${escH(s.collegeName)}</div>` : ''}
-
-            <div style="font-size:12pt;margin-top:0.3rem;">to</div>
-
-            ${s.universityName ? `<div style="font-size:12pt;font-weight:bold;margin-top:0.3rem;">the ${escH(s.universityName)}${s.collegeAddress ? `, ${escH(s.collegeAddress)}` : ''}</div>` : ''}
-
-            <div style="font-size:12pt;margin-top:0.3rem;">in partial fulfillment of the requirements for the award of</div>
-            <div style="font-size:12pt;">
-                ${s.degreeName || s.course || '<span class="placeholder-text">Degree Name</span>'}
+            <div>
+                <div style="font-size:12pt;font-style:italic; margin-bottom: 0.5rem;">Under the guidance of</div>
+                <div style="font-size:16pt;font-weight:bold;text-transform:uppercase; margin-bottom: 0.25rem;">
+                    ${s.guideName || '<span class="placeholder-text">Guide Name</span>'}
+                </div>
+                ${s.guideDesignation ? `<div style="font-size:12pt;font-style:italic;">${escH(s.guideDesignation)}</div>` : ''}
+                ${s.departmentName ? `<div style="font-size:12pt;font-weight:bold;font-style:italic;">Department of ${escH(s.departmentName)}</div>` : ''}
+                ${s.collegeName ? `<div style="font-size:12pt;font-weight:bold;font-style:italic;">${escH(s.collegeName)}</div>` : ''}
             </div>
 
-            <div style="height:1.5rem;"></div>
+            <div style="font-size:12pt;">to</div>
+
+            ${s.universityName ? `<div style="font-size:14pt;font-weight:bold;">the ${escH(s.universityName)}${s.collegeAddress ? `, ${escH(s.collegeAddress)}` : ''}</div>` : ''}
+
+            <div>
+                <div style="font-size:12pt;">in partial fulfillment of the requirements for the award of</div>
+                <div style="font-size:14pt; font-weight:bold;">
+                    ${s.degreeName || s.course || '<span class="placeholder-text">Degree Name</span>'}
+                </div>
+            </div>
 
             ${s.universityLogo ? `<img src="${s.universityLogo}" style="max-width:140px;max-height:140px;object-fit:contain;" alt="Logo" />` : ''}
-             <div style="margin-top:auto;padding-top:1rem;">
-                ${s.departmentName ? `<div style="font-size:13pt;font-weight:bold;">Department of ${escH(s.departmentName)}</div>` : ''}
-                ${s.collegeName ? `<div style="font-size:12pt;font-weight:bold;font-style:italic;">${escH(s.collegeName)}${s.collegeAddress ? `, ${escH(s.collegeAddress)}` : ''}</div>` : ''}
+            
+             <div style="margin-top:1rem;">
+                ${s.departmentName ? `<div style="font-size:14pt;font-weight:bold;">Department of ${escH(s.departmentName)}</div>` : ''}
+                ${s.collegeName ? `<div style="font-size:12pt;">${escH(s.collegeName)}${s.collegeAddress ? `, ${escH(s.collegeAddress)}` : ''}</div>` : ''}
             </div>
         </div>`;
 }
 
-function renderFrontMatterPageHTML(title, content) {
-    const paragraphs = content ? content.split('\n').filter(p => p.trim()).map(p => `<p style="text-align:justify; margin-bottom:0.8rem;">${escH(p)}</p>`).join('') : '';
+function renderFrontMatterPageHTML(title, content, s) {
+    let innerHTML = '';
+
+    if (title === 'Declaration') {
+        const s = reportState.get(); // Access state directly if needed, or rely on passed content if it was pre-formatted. 
+        // Better to re-generate the declaration HTML here to ensure it matches the specific requirements
+        const declMemberNames = s.members.filter(m => m.name).map(m => m.name.toUpperCase()).join(', ');
+
+        innerHTML = `
+            <p style="text-align:justify; margin-bottom:0.8rem; font-size: 14pt; line-height: 1.6;">
+                We hereby certify that the work which is being presented in the Project stage Entitled "<b>${escH((s.projectTitle || '').toUpperCase())}</b>" by <b>${escH(declMemberNames)}</b> in partial fulfilment of requirements for the award of degree of ${escH(s.degreeName || 'B. Tech')} in the Department of ${escH(s.departmentName || 'Computer Science')} at <b>${escH((s.collegeName || 'COLLEGE NAME').toUpperCase())}</b> under <b>${escH((s.universityName || 'UNIVERSITY NAME').toUpperCase())}</b> is an authentic record of our own work carried out during a period ${escH(s.academicYear || '202X-202X')}. The matter presented in this project has not been submitted by us or anybody else in any other University / Institute for the award of ${escH(s.degreeName || 'B. Tech')} Degree.
+            </p>
+            <div style="margin-top: 5rem; display: flex; justify-content: space-between; font-size: 14pt;">
+                <div>Date :</div>
+                <div>Signature :</div>
+            </div>
+        `;
+    } else if (title === 'Acknowledgement') {
+        // s is guaranteed to be passed now
+        if (!s) s = reportState.get();
+
+        innerHTML = `
+            <p style="text-align:justify; margin-bottom:1.5rem; font-size: 14pt; line-height: 1.6;">
+                First and foremost, we sincerely thank the Almighty for his grace for the successful and timely completion of the stage of our project "<b>${escH((s.projectTitle || '').toUpperCase())}</b>". We are greatly indebted to all those who helped us to make this project successful.
+            </p>
+            <p style="text-align:justify; margin-bottom:1.5rem; font-size: 14pt; line-height: 1.6;">
+                We are also grateful to <b>${escH(s.principalName || '[Principal Name]')}</b>, Principal, ${escH(s.collegeName || '[College Name]')}, for providing us with the best facilities and atmosphere for our project development. We also wish to express our gratitude to <b>${escH(s.hodName || '[HOD Name]')}</b>, ${escH(s.hodDesignation || 'Head of Department')}, Department of ${escH(s.departmentName || '[Department]')}. We owe special thanks to our Project Guide <b>${escH(s.guideName || '[Guide Name]')}</b>, ${escH(s.guideDesignation || 'Assistant Professor')}, Department of ${escH(s.guideDepartment || s.departmentName || '[Department]')} and our coordinators <b>${escH(s.coordinator1Name || '[Coordinator 1]')}</b> and <b>${escH(s.coordinator2Name || '[Coordinator 2]')}</b>, ${escH(s.coordinator1Designation || 'Assistant Professors')}, Department of ${escH(s.departmentName || '[Department]')}, for their corrections, valuable and countless suggestions, support and timely guidance.
+            </p>
+            <p style="text-align:justify; margin-bottom:1.5rem; font-size: 14pt; line-height: 1.6;">
+                Finally, but not least we would like to acknowledge our friends who were inevitable for the successful completion of this project.
+            </p>
+        `;
+    } else {
+        innerHTML = content ? content.split('\n').filter(p => p.trim()).map(p => `<p style="text-align:justify; margin-bottom:0.8rem;">${escH(p)}</p>`).join('') : '';
+    }
+
     return `
         <div class="front-matter-page">
-            <h2 style="text-align:center; text-transform:uppercase; margin-bottom:2rem;">${title}</h2>
-            ${paragraphs || `<p class="placeholder-text">No content yet...</p>`}
+            <h2 style="text-align:center; text-transform:uppercase; margin-bottom:3rem; font-size: 16pt; font-weight: bold;">${title}</h2>
+            ${innerHTML || `<p class="placeholder-text">No content yet...</p>`}
         </div>`;
 }
 
@@ -330,20 +363,20 @@ function renderCertificatePageHTML(s) {
     const row2Right = sigBlock(s.hodName, s.hodDesignation || 'HOD', s.hodDesignation ? '' : '', s.hodDepartment || s.departmentName, s.collegeName);
 
     return `
-        <div class="front-matter-page" style="display:flex;flex-direction:column; height:100%;">
-             <div style="text-align:center;margin-bottom:0.5rem;">
-                <div style="font-size:13pt;font-weight:bold;text-transform:uppercase;">${escH(s.collegeName) || 'College Name'}${s.collegeAddress ? `, ${escH(s.collegeAddress)}` : ''}</div>
-                <div style="font-size:13pt;font-weight:bold;text-transform:uppercase;">${s.departmentName ? `DEPARTMENT OF ${s.departmentName.toUpperCase()}` : 'DEPARTMENT'}</div>
+        <div class="front-matter-page" style="display:flex;flex-direction:column; height:100%; padding: 1rem 0;">
+             <div style="text-align:center;margin-bottom:2rem;">
+                <div style="font-size:16pt;font-weight:bold;text-transform:uppercase; margin-bottom: 0.5rem;">${escH(s.collegeName) || 'College Name'}${s.collegeAddress ? `, ${escH(s.collegeAddress)}` : ''}</div>
+                <div style="font-size:14pt;font-weight:bold;text-transform:uppercase;">${s.departmentName ? `DEPARTMENT OF ${s.departmentName.toUpperCase()}` : 'DEPARTMENT'}</div>
             </div>
 
-            ${(s.certificateLogo || s.universityLogo) ? `<div style="text-align:center;margin:0.75rem 0;"><img src="${s.certificateLogo || s.universityLogo}" style="max-width:120px;max-height:120px;object-fit:contain;" alt="Logo" /></div>` : ''}
+            ${(s.certificateLogo || s.universityLogo) ? `<div style="text-align:center;margin:1rem 0 2rem;"><img src="${s.certificateLogo || s.universityLogo}" style="max-width:140px;max-height:140px;object-fit:contain;" alt="Logo" /></div>` : ''}
 
-            <h2 style="text-align:center;font-size:14pt;font-weight:bold;text-transform:uppercase;margin:0.75rem 0 1rem;text-decoration:none;letter-spacing:1px;color:#000;">Certificate</h2>
+            <h2 style="text-align:center;font-size:20pt;font-weight:bold;text-transform:uppercase;margin:1rem 0 3rem;text-decoration:none;letter-spacing:2px;color:#000;">Certificate</h2>
 
-            <p style="text-align:justify;line-height:1.5;font-size:12pt;margin-bottom:1.5rem;">${certText}</p>
+            <p style="text-align:justify;line-height:1.6;font-size:14pt;margin-bottom:auto;">${certText}</p>
 
-             <div style="margin-top:auto;">
-                ${(row1Left || row1Right) ? `<div style="display:flex;justify-content:space-between;gap:1rem;margin-bottom:2rem;">${row1Left}${row1Right}</div>` : ''}
+             <div style="margin-top:3rem;">
+                ${(row1Left || row1Right) ? `<div style="display:flex;justify-content:space-between;gap:1rem;margin-bottom:3rem;">${row1Left}${row1Right}</div>` : ''}
                 ${(row2Left || row2Right) ? `<div style="display:flex;justify-content:space-between;gap:1rem;">${row2Left}${row2Right}</div>` : ''}
             </div>
         </div>`;

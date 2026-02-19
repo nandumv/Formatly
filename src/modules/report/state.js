@@ -26,6 +26,7 @@ const defaultState = {
     coordinator2Designation: '',
     hodName: '',
     hodDesignation: '',
+    principalName: '',
 
     // Logos
     collegeLogo: null,    // base64 data URL

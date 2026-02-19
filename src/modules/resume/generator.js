@@ -174,8 +174,11 @@ export async function generateDOCX() {
     // --- Languages --
     if (r.languages.length > 0) {
         docSections.push(createSectionHeader("LANGUAGES"));
-        const langText = r.languages.map(l => `${l.language} (${l.proficiency})`).join('  •  ');
-        docSections.push(new Paragraph({ text: langText, style: "Normal" }));
+        r.languages.forEach(l => {
+            const proficiency = l.proficiency && l.proficiency.trim() ? ` (${l.proficiency})` : '';
+            docSections.push(new Paragraph({ text: `${l.language}${proficiency}`, style: "Normal", spacing: { after: 0 } }));
+        });
+        docSections.push(new Paragraph({ text: "", spacing: { after: 120 } }));
     }
 
     // --- Projects ---
@@ -188,7 +191,18 @@ export async function generateDOCX() {
                 ],
                 spacing: { after: 0 }
             }));
-            docSections.push(new Paragraph({ text: p.desc, style: "Normal", spacing: { after: 120 }, alignment: AlignmentType.JUSTIFIED }));
+            // Bullets
+            const lines = p.desc.split('\n').filter(l => l.trim());
+            lines.forEach(l => {
+                docSections.push(new Paragraph({
+                    text: l,
+                    bullet: { level: 0 },
+                    style: "Normal",
+                    alignment: AlignmentType.JUSTIFIED, // Justify bullets
+                    spacing: { after: 0 }
+                }));
+            });
+            docSections.push(new Paragraph({ text: "", spacing: { after: 120 } })); // Spacer
         });
     }
 
@@ -217,9 +231,12 @@ export async function generateDOCX() {
     }
 
     // --- Interests ---
-    if (r.interests) {
+    if (r.interests && r.interests.trim()) {
         docSections.push(createSectionHeader("INTERESTS"));
-        docSections.push(new Paragraph({ text: r.interests, style: "Normal", alignment: AlignmentType.JUSTIFIED }));
+        const lines = r.interests.split('\n').filter(l => l.trim());
+        lines.forEach(l => {
+            docSections.push(new Paragraph({ text: l, style: "Normal", alignment: AlignmentType.JUSTIFIED }));
+        });
     }
 
     // --- References ---
