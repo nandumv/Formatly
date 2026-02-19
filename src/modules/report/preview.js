@@ -348,12 +348,12 @@ function renderCertificatePageHTML(s) {
     function sigBlock(name, role, designation, dept, college) {
         if (!name) return '';
         return `
-        <div style="flex:1;min-width:45%; text-align:center;">
-            <div style="font-size:11pt;font-weight:bold;margin-bottom:2px;">${escH(name)}</div>
-            ${role ? `<div style="font-size:10pt;font-style:italic;">(${escH(role)})</div>` : ''}
-            ${designation ? `<div style="font-size:10pt;">${escH(designation)}</div>` : ''}
-            ${dept ? `<div style="font-size:10pt;">Department of ${escH(dept)}</div>` : ''}
-            ${college ? `<div style="font-size:10pt;">${escH(college)}</div>` : ''}
+        <div style="flex:1;min-width:45%; text-align:left; font-size: 14pt; line-height: 1.5;">
+            <div style="font-weight:bold;margin-bottom:2px;">${escH(name)}</div>
+            ${role ? `<div style="">(${escH(role)})</div>` : ''}
+            ${designation ? `<div style="">${escH(designation)}</div>` : ''}
+            ${dept ? `<div style="">Department of ${escH(dept)},</div>` : ''}
+            ${college ? `<div style="">${escH(college)}</div>` : ''}
         </div>`;
     }
 

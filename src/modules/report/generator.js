@@ -549,40 +549,41 @@ function buildSignatoryRows(s) {
         const deptText = specificDept ? `Department of ${specificDept}` : dept;
 
         lines.push(new Paragraph({
-            alignment: AlignmentType.CENTER,
+            alignment: AlignmentType.LEFT,
             children: [textRun(name, 24, true)], // 12pt
             spacing: { line: LINE_SPACING, lineRule: 'auto' },
         }));
         if (role) {
             lines.push(new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [new TextRun({ text: `(${role})`, font: FONT, size: 20, italics: true })],
+                alignment: AlignmentType.LEFT,
+                children: [new TextRun({ text: `(${role})`, font: FONT, size: 24, italics: false })], // 12pt, normal
                 spacing: { line: LINE_SPACING, lineRule: 'auto' },
             }));
         }
         if (designation) {
             lines.push(new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [textRun(designation, 20, false)],
+                alignment: AlignmentType.LEFT,
+                children: [textRun(designation, 24, false)],
                 spacing: { line: LINE_SPACING, lineRule: 'auto' },
             }));
         }
         if (deptText) {
             lines.push(new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [textRun(deptText, 20, false)],
+                alignment: AlignmentType.LEFT,
+                children: [textRun(deptText + ',', 24, false)],
                 spacing: { line: LINE_SPACING, lineRule: 'auto' },
             }));
         }
         if (college) {
             lines.push(new Paragraph({
-                alignment: AlignmentType.CENTER,
-                children: [textRun(college, 20, false)],
+                alignment: AlignmentType.LEFT,
+                children: [textRun(college, 24, false)],
                 spacing: { line: LINE_SPACING, lineRule: 'auto' },
             }));
         }
         return lines;
     }
+
 
     // Add spacer before signatories
     paras.push(new Paragraph({ spacing: { before: 600, line: LINE_SPACING, lineRule: 'auto' }, children: [] }));
