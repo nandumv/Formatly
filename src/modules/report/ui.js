@@ -438,49 +438,57 @@ async function exportPdf() {
         const previewEl = document.getElementById('report-preview');
         if (!previewEl) return;
 
-        const html2pdf = (await import('html2pdf.js')).default;
+        // Robust import for html2pdf
+        let html2pdfModule = await import('html2pdf.js');
+        let html2pdf = html2pdfModule.default || html2pdfModule;
+
         const papers = previewEl.querySelectorAll('.report-paper');
+        if (papers.length === 0) {
+            alert('No report content to export.');
+            return;
+        }
 
         // Create a temp wrapper inside the preview (in the DOM for proper layout)
         const wrapper = document.createElement('div');
-        wrapper.style.background = '#fff';
-        previewEl.appendChild(wrapper);
+        wrapper.style.position = 'fixed'; // Use fixed to ensure it's in viewport but controllable
+        wrapper.style.left = '0';
+        wrapper.style.top = '0';
+        wrapper.style.width = '210mm'; // A4 width
+        wrapper.style.zIndex = '9999'; // On top of everything
+        wrapper.style.background = '#ffffff'; // Ensure white background
+        document.body.appendChild(wrapper);
 
-        // Move papers into wrapper and reset styles for capture
-        const origStyles = [];
+        // Clone papers into wrapper to preserve original view
         papers.forEach(p => {
-            origStyles.push({
-                transform: p.style.transform,
-                marginBottom: p.style.marginBottom,
-                boxShadow: p.style.boxShadow
-            });
-            p.style.transform = 'none';
-            p.style.margin = '0';
-            p.style.boxShadow = 'none';
-            wrapper.appendChild(p);
+            const clone = p.cloneNode(true);
+            clone.style.margin = '0'; // Remove preview margins for continuous PDF
+            clone.style.boxShadow = 'none';
+            clone.style.transform = 'none';
+            // Page break after each paper except the last
+            clone.style.pageBreakAfter = 'always';
+            wrapper.appendChild(clone);
         });
 
-        await new Promise(r => setTimeout(r, 50));
+        // Remove page-break from the last page to avoid empty sheet
+        if (wrapper.lastElementChild) {
+            wrapper.lastElementChild.style.pageBreakAfter = 'auto';
+        }
 
-        await html2pdf().set({
+        await new Promise(r => setTimeout(r, 500)); // Wait for render (Increased to 500ms)
+
+        const opt = {
             margin: 0,
             filename: `${reportState.get().projectTitle || 'Project_Report'}.pdf`,
             image: { type: 'jpeg', quality: 0.98 },
-            html2canvas: { scale: 2, useCORS: true },
-            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-            pagebreak: { mode: ['css', 'legacy'], avoid: ['.chapter-heading', '.chapter-subheading', '.figure-container'] }
-        }).from(wrapper).save();
+            html2canvas: { scale: 2, useCORS: true, logging: true },
+            jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+        };
 
-        // Restore: move papers back and reset styles
-        papers.forEach((p, i) => {
-            p.style.transform = origStyles[i].transform;
-            p.style.marginBottom = origStyles[i].marginBottom;
-            p.style.boxShadow = origStyles[i].boxShadow;
-            previewEl.appendChild(p);
-        });
-        wrapper.remove();
+        await html2pdf().set(opt).from(wrapper).save();
+
+        document.body.removeChild(wrapper);
     } catch (err) {
         console.error('PDF export error:', err);
-        alert('PDF export failed. Please try again.');
+        alert(`PDF export failed: ${err.message || err}`);
     }
 }

@@ -13,49 +13,51 @@ export function generateReportDocx(s) {
     children.push(pageBreak());
 
     // ─── Certificate ────────────────────────────
-    // Header: College + Department
+    // Page break is handled by the previous section's end or manually here if needed.
+    // children.push(pageBreak()); // Ensure unique page
+
+    // College Header
     children.push(new Paragraph({
         alignment: AlignmentType.CENTER,
-        children: [textRun(`${(s.collegeName || '').toUpperCase()}${s.collegeAddress ? `, ${s.collegeAddress.toUpperCase()}` : ''}`, 32, true)], // 16pt
-        spacing: { after: 120, line: LINE_SPACING, lineRule: 'auto' },
-    }));
-    children.push(new Paragraph({
-        alignment: AlignmentType.CENTER,
-        children: [textRun(`DEPARTMENT OF ${(s.departmentName || '').toUpperCase()}`, 28, true)], // 14pt
-        spacing: { after: 480, line: LINE_SPACING, lineRule: 'auto' },
+        children: [textRun((s.collegeName || 'COLLEGE NAME').toUpperCase(), 32, true)], // 16pt
+        spacing: { before: 240, after: 120 },
     }));
 
-    // Certificate Logo (or University Logo fallback)
-    const certLogo = s.certificateLogo || s.universityLogo;
-    if (certLogo) {
+    // Department Header
+    children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        children: [new TextRun({ text: `DEPARTMENT OF ${(s.departmentName || 'DEPARTMENT').toUpperCase()}`, font: FONT, size: 28, bold: true })], // 14pt
+        spacing: { before: 120, after: 240 },
+    }));
+
+    // Logo
+    if (s.certificateLogo || s.universityLogo) {
         try {
+            const logoData = (s.certificateLogo || s.universityLogo).split(',')[1];
             const image = new ImageRun({
-                data: certLogo.split(',')[1],
-                transformation: { width: 120, height: 120 }, // Slightly larger logo
+                data: logoData,
+                transformation: { width: 100, height: 100 }, // Compact logo
             });
             children.push(new Paragraph({
                 alignment: AlignmentType.CENTER,
                 children: [image],
-                spacing: { after: 480, line: LINE_SPACING, lineRule: 'auto' },
+                spacing: { before: 120, after: 120 },
             }));
-        } catch (e) {
-            console.warn('Failed to add certificate logo to DOCX', e);
-        }
+        } catch (e) { console.warn(e); }
     }
 
-    // CERTIFICATE heading
+    // CERTIFICATE Heading
     children.push(new Paragraph({
         alignment: AlignmentType.CENTER,
-        children: [new TextRun({ text: 'CERTIFICATE', font: FONT, size: 40, bold: true, color: '000000' })], // 20pt
-        spacing: { after: 720, line: LINE_SPACING, lineRule: 'auto' }, // More space after title
-        keepNext: true,
-        keepLines: true,
+        children: [textRun('CERTIFICATE', 32, true)], // 16pt
+        spacing: { before: 240, after: 240 },
     }));
-    // Certificate body
+
+    // Certificate Body
     const certText = s.certificateText || generateCertBodyText(s);
     if (certText) {
         certText.split('\n').filter(p => p.trim()).forEach(p => {
-            children.push(bodyPara(p, 28)); // 14pt body
+            children.push(bodyPara(p, 24)); // 12pt body (Reduced from 14pt to fit page)
         });
     }
     // Signatory blocks
@@ -94,7 +96,7 @@ export function generateReportDocx(s) {
     children.push(declPara);
 
     // Declaration Footer (Date & Signature)
-    children.push(new Paragraph({ spacing: { before: 1440 } })); // Large Spacer (approx 2 inches or enough to push to bottom)
+    children.push(new Paragraph({ spacing: { before: 800 } })); // Reduced spacer to fit on page
     children.push(new Table({
         width: { size: 100, type: WidthType.PERCENTAGE },
         borders: {
@@ -585,8 +587,8 @@ function buildSignatoryRows(s) {
     }
 
 
-    // Add spacer before signatories
-    paras.push(new Paragraph({ spacing: { before: 600, line: LINE_SPACING, lineRule: 'auto' }, children: [] }));
+    // Add spacer before signatories (reduced to prevent page overflow)
+    paras.push(new Paragraph({ spacing: { before: 120, line: LINE_SPACING, lineRule: 'auto' }, children: [] }));
 
     // Create a 2x2 table (invisible borders)
     const table = new Table({
